@@ -56,11 +56,13 @@ fun bigramanalysis(filename: String) {
     // Valid karakterek halmaza (gyors kereséshez)
     val validcharacters = "aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz.,!?:;-\"'()".toSet()
 
-    // A leggyakoribb mássalhangzók kisbetűsítve
+    // --- MÁSSALHANGZÓK ---
     val mostFrequentConsonants = "ltsnkrz"
-
-    // Az összes mássalhangzó (magánhangzók és az 'y' nélkül)
     val consonants = "bcdfghjklmnpqrstvwxz".toSet()
+
+    // --- MAGÁNHANGZÓK (az 'y'-t is ide sorolva a kérés alapján) ---
+    val mostFrequentVowels = "aeioáé"
+    val vowels = "aáeéiíoóöőuúüűy.,:?".toSet()
 
     val bigramMap = mutableMapOf<String, Int>()
     var totalBigrams = 0L
@@ -69,21 +71,16 @@ fun bigramanalysis(filename: String) {
     println("Szöveg feldolgozása és bigramok kinyerése...")
     inputFile.useLines { lines ->
         lines.forEach { line ->
-            // Szétvágás whitespace-ek (szóköz, tabulátor) mentén
             val words = line.split(Regex("\\s+"))
 
             for (word in words) {
                 val lowerWord = word.lowercase()
 
-                // Ha a szó nem üres és CSAK a mi valid karaktereinket tartalmazza
                 if (lowerWord.isNotEmpty() && lowerWord.all { it in validcharacters }) {
-
-                    // Bigramok kinyerése a szóból
                     for (i in 0 until lowerWord.length - 1) {
                         val c1 = lowerWord[i]
                         val c2 = lowerWord[i + 1]
 
-                        // Irányítatlan bigram: abc sorrendbe rakjuk a két karaktert
                         val bigramKey = if (c1 < c2) "$c1$c2" else "$c2$c1"
 
                         bigramMap[bigramKey] = bigramMap.getOrDefault(bigramKey, 0) + 1
@@ -98,13 +95,17 @@ fun bigramanalysis(filename: String) {
     val sortedBigrams = bigramMap.map { BigramFrequency(it.key, it.value) }
         .sortedByDescending { it.count }
 
-    // Eredménymappa előkészítése
     val resultDir = File("analysis_results/$filename")
     resultDir.mkdirs()
 
     // 3. Fő bigramfrekvencia fájl kiírása (az ÖSSZES bigram)
     val mainOutputFile = File(resultDir, "bigramfrequency.txt")
     mainOutputFile.bufferedWriter().use { writer ->
+
+        // --- ÚJ RÉSZ: Teljes bigramszám kiírása az első sorba ---
+        writer.write(totalBigrams.toString())
+        writer.newLine()
+
         for (item in sortedBigrams) {
             val percentage = (item.count.toDouble() / totalBigrams) * 100
             val formattedPercentage = "%.4f".format(percentage)
@@ -114,29 +115,23 @@ fun bigramanalysis(filename: String) {
     }
     println("Sikeresen végrehajtva: bigramfrequency.txt létrehozva.")
 
-// 4. Leggyakoribb mássalhangzók top 12 MÁSSALHANGZÓ-MÁSSALHANGZÓ bigramjai
+    // 4. Leggyakoribb mássalhangzók top 12 MÁSSALHANGZÓ-MÁSSALHANGZÓ bigramjai
     val consonantOutputFile = File(resultDir, "mostfrequentConsonantBigrams.txt")
     consonantOutputFile.bufferedWriter().use { writer ->
         for (targetConsonant in mostFrequentConsonants) {
             writer.write("${targetConsonant.uppercaseChar()} bigramjai:")
             writer.newLine()
 
-            // Kiszűrjük a tiszta mássalhangzó-párosokat
             val top12ConsonantPairs = sortedBigrams.filter {
-                // 1. Szerepelnie kell benne az aktuális cél-mássalhangzónak (pl. 'l')
                 it.bigram.contains(targetConsonant) &&
-                        // 2. Az első karakternek a mássalhangzók listájában kell lennie
                         it.bigram[0] in consonants &&
-                        // 3. A második karakternek is a mássalhangzók listájában kell lennie
                         it.bigram[1] in consonants
-            }.take(12) // Vesszük az első 12-t a korábbi 10 helyett
+            }.take(12)
 
             for (item in top12ConsonantPairs) {
-                // Százalék kiszámítása
                 val percentage = (item.count.toDouble() / totalBigrams) * 100
                 val formattedPercentage = "%.4f".format(percentage)
 
-                // SFB besorolás a kért küszöbértékek alapján
                 val sfbCategory = when {
                     percentage <= 0.040 -> "minimal"
                     percentage <= 0.070 -> "low"
@@ -144,11 +139,10 @@ fun bigramanalysis(filename: String) {
                     else -> "high"
                 }
 
-                // Kiírás: Bigram \t Százalék% \t SFB Kategória \t Darabszám
                 writer.write("${item.bigram}\t$formattedPercentage%\t$sfbCategory\t${item.count}")
                 writer.newLine()
             }
-            writer.newLine() // Egy üres sor a vizuális elkülönítéshez
+            writer.newLine()
         }
     }
     println("Sikeresen végrehajtva: mostfrequentConsonantBigrams.txt létrehozva.")
@@ -160,8 +154,6 @@ fun bigramanalysis(filename: String) {
             writer.write("${targetConsonant.uppercaseChar()} legritkább bigramjai:")
             writer.newLine()
 
-            // Kiszűrjük a tiszta mássalhangzó-párosokat, majd a lista legvégéről (legkisebb darabszám)
-            // kivesszük az utolsó 12-t. A .reversed() biztosítja, hogy a legritkább legyen legelöl.
             val bottom12ConsonantPairs = sortedBigrams.filter {
                 it.bigram.contains(targetConsonant) &&
                         it.bigram[0] in consonants &&
@@ -169,12 +161,9 @@ fun bigramanalysis(filename: String) {
             }.takeLast(12).reversed()
 
             for (item in bottom12ConsonantPairs) {
-                // Százalék kiszámítása
                 val percentage = (item.count.toDouble() / totalBigrams) * 100
                 val formattedPercentage = "%.4f".format(percentage)
 
-                // SFB besorolás a kért küszöbértékek alapján
-                // (Ezeknél a ritka bigramoknál szinte mind "minimal" lesz, de a logika ugyanaz)
                 val sfbCategory = when {
                     percentage <= 0.040 -> "minimal"
                     percentage <= 0.070 -> "low"
@@ -182,13 +171,79 @@ fun bigramanalysis(filename: String) {
                     else -> "high"
                 }
 
-                // Kiírás: Bigram \t Százalék% \t SFB Kategória \t Darabszám
                 writer.write("${item.bigram}\t$formattedPercentage%\t$sfbCategory\t${item.count}")
                 writer.newLine()
             }
-            writer.newLine() // Egy üres sor a vizuális elkülönítéshez
+            writer.newLine()
         }
     }
     println("Sikeresen végrehajtva: leastfrequentConsonantBigrams.txt létrehozva.")
 
+    // --- ÚJ RÉSZ: MAGÁNHANGZÓK ELEMZÉSE ---
+
+    // 6. Leggyakoribb magánhangzók top 12 MAGÁNHANGZÓ-MAGÁNHANGZÓ bigramjai
+    val vowelOutputFile = File(resultDir, "mostfrequentVowelBigrams.txt")
+    vowelOutputFile.bufferedWriter().use { writer ->
+        for (targetVowel in mostFrequentVowels) {
+            writer.write("${targetVowel.uppercaseChar()} bigramjai:")
+            writer.newLine()
+
+            // Kiszűrjük a tiszta magánhangzó-párosokat
+            val top12VowelPairs = sortedBigrams.filter {
+                it.bigram.contains(targetVowel) &&
+                        it.bigram[0] in vowels &&
+                        it.bigram[1] in vowels
+            }.take(12)
+
+            for (item in top12VowelPairs) {
+                val percentage = (item.count.toDouble() / totalBigrams) * 100
+                val formattedPercentage = "%.4f".format(percentage)
+
+                val sfbCategory = when {
+                    percentage <= 0.040 -> "minimal"
+                    percentage <= 0.070 -> "low"
+                    percentage <= 0.178 -> "medium"
+                    else -> "high"
+                }
+
+                writer.write("${item.bigram}\t$formattedPercentage%\t$sfbCategory\t${item.count}")
+                writer.newLine()
+            }
+            writer.newLine()
+        }
+    }
+    println("Sikeresen végrehajtva: mostfrequentVowelBigrams.txt létrehozva.")
+
+    // 7. Leggyakoribb magánhangzók 12 LEGRITKÁBB MAGÁNHANGZÓ-MAGÁNHANGZÓ bigramjai
+    val leastVowelOutputFile = File(resultDir, "leastfrequentVowelBigrams.txt")
+    leastVowelOutputFile.bufferedWriter().use { writer ->
+        for (targetVowel in mostFrequentVowels) {
+            writer.write("${targetVowel.uppercaseChar()} legritkább bigramjai:")
+            writer.newLine()
+
+            // Kiszűrjük a tiszta magánhangzó-párosokat a lista végéről
+            val bottom12VowelPairs = sortedBigrams.filter {
+                it.bigram.contains(targetVowel) &&
+                        it.bigram[0] in vowels &&
+                        it.bigram[1] in vowels
+            }.takeLast(12).reversed()
+
+            for (item in bottom12VowelPairs) {
+                val percentage = (item.count.toDouble() / totalBigrams) * 100
+                val formattedPercentage = "%.4f".format(percentage)
+
+                val sfbCategory = when {
+                    percentage <= 0.040 -> "minimal"
+                    percentage <= 0.070 -> "low"
+                    percentage <= 0.178 -> "medium"
+                    else -> "high"
+                }
+
+                writer.write("${item.bigram}\t$formattedPercentage%\t$sfbCategory\t${item.count}")
+                writer.newLine()
+            }
+            writer.newLine()
+        }
+    }
+    println("Sikeresen végrehajtva: leastfrequentVowelBigrams.txt létrehozva.")
 }

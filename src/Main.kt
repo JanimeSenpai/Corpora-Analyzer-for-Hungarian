@@ -1,3 +1,4 @@
+import keyboard_analysis.launchsimplesfbanalysis
 import kotlin.system.exitProcess
 
 fun main() {
@@ -29,6 +30,8 @@ fun readcommands(){
             "bc" -> launchbuildcorpora()
             "bigram analysis" -> launchbigramanalysis()
             "ba" -> launchbigramanalysis()
+            "keyboard bigram analysis" -> launchsimplesfbanalysis()
+            "kba" -> launchsimplesfbanalysis()
             "exit"-> exitProcess(0)
         }
 
