@@ -27,6 +27,8 @@ fun readcommands(){
             "lf"->launchletterfrequency()
             "buildcorpora"->launchbuildcorpora()
             "bc" -> launchbuildcorpora()
+            "bigram analysis" -> launchbigramanalysis()
+            "ba" -> launchbigramanalysis()
             "exit"-> exitProcess(0)
         }
 

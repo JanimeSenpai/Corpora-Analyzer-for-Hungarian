@@ -1,6 +1,17 @@
 
 import java.io.File
 
+//olvassuk be az összefűzendő fájlok nevét
+
+//használjunk egy while ciklust
+
+//hogyha a beolvasott szöveg done, akkor ne adjunk több fájlnevet a listához
+
+//olvassuk be a fájl nevét
+
+//a buildcorpora függvény fűzze össze soronként a megadott fájlokat és adja ki egy új textfájl formájában az eredményt, ami legyen a processable_texts mappában
+
+
 fun launchbuildcorpora() {
     println("Enter the name of processable files. These files should be located in the processable_texts folder.")
     println("Add each filename in a new line. Once you are done enter 'done'.")

@@ -33,7 +33,14 @@ fun letterfrequency(filepath: String) {
         var charInt: Int
         // Olvasás amíg el nem érjük a fájl végét (-1)
         while (reader.read().also { charInt = it } != -1) {
-            val char = charInt.toChar().lowercaseChar() //nem akarunk különbséget tenni kis és nagy betűk között
+            val char = charInt.toChar().lowercaseChar()
+
+            // --- ÚJ RÉSZ: Formázó karakterek eldobása ---
+            if (char == '\n' || char == '\t' || char == '\r') {
+                continue // Azonnal visszaugrik a while ciklus elejére, a következő karakterre
+            }
+
+            // Ez a rész már csak az érvényes karaktereknél fut le
             // Ha a karakter még nincs a szótárban, 0-ról indul, amúgy hozzáad egyet
             frequencyMap[char] = frequencyMap.getOrDefault(char, 0) + 1
             totalLength++
