@@ -1,3 +1,7 @@
+import keyboard_analysis.launch3RollAnalysis
+import keyboard_analysis.launchAlternationAnalysis
+import keyboard_analysis.launchRedirectAnalysis
+import keyboard_analysis.launchRollAnalysis
 import keyboard_analysis.launchsimplesfbanalysis
 import kotlin.system.exitProcess
 
@@ -32,6 +36,16 @@ fun readcommands(){
             "ba" -> launchbigramanalysis()
             "keyboard bigram analysis" -> launchsimplesfbanalysis()
             "kba" -> launchsimplesfbanalysis()
+            "trigram analysis" -> launchtrigramanalysis()
+            "ta" -> launchtrigramanalysis()
+            "layout alternation analysis" -> launchAlternationAnalysis()
+            "laa" -> launchAlternationAnalysis()
+            "layout 2roll analysis" -> launchRollAnalysis()
+            "l2ra" -> launchRollAnalysis()
+            "layout 3roll analysis" -> launch3RollAnalysis()
+            "l3ra" -> launch3RollAnalysis()
+            "layout redirect analysis" ->launchRedirectAnalysis()
+            "lra"->launchRedirectAnalysis()
             "exit"-> exitProcess(0)
         }
 
