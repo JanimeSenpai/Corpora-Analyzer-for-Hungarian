@@ -1,5 +1,6 @@
 import keyboard_analysis.launch3RollAnalysis
 import keyboard_analysis.launchAlternationAnalysis
+import keyboard_analysis.launchCompleteLayoutAnalysis
 import keyboard_analysis.launchRedirectAnalysis
 import keyboard_analysis.launchRollAnalysis
 import keyboard_analysis.launchsimplesfbanalysis
@@ -46,6 +47,9 @@ fun readcommands(){
             "l3ra" -> launch3RollAnalysis()
             "layout redirect analysis" ->launchRedirectAnalysis()
             "lra"->launchRedirectAnalysis()
+            "complete layout analysis" -> launchCompleteLayoutAnalysis()
+            "cla" -> launchCompleteLayoutAnalysis()
+            "sta" ->launchSpaceIncludedTrigramAnalysis()
             "exit"-> exitProcess(0)
         }
 

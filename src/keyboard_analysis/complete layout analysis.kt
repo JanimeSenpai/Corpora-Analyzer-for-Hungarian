@@ -1,0 +1,62 @@
+package keyboard_analysis
+
+import java.io.File
+
+fun launchCompleteLayoutAnalysis() {
+    println("--- TELJES BILLENTYŰZET ELEMZÉS ---")
+
+    // 1. Billentyűzet bekérése
+    println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards_simple mappából):")
+    var layoutName = readln().trim()
+    if (!layoutName.endsWith(".txt")) layoutName += ".txt"
+
+    val layoutFile = File("keyboards_simple/$layoutName")
+    if (!layoutFile.exists()) {
+        println("Hiba: A billentyűzet fájl nem található ($layoutFile).")
+        return
+    }
+
+    // 2. Adathalmaz bekérése
+    println("Kérem az adathalmaz nevét (pontosan úgy, ahogy a mappa neve szerepel, pl. 'szoveg.txt'):")
+    var datasetName = readln().trim()
+    if (!datasetName.endsWith(".txt")) datasetName += ".txt"
+
+    // 3. Fájlok ellenőrzése (Bigram és Trigram is kell a teljes elemzéshez)
+    val bigramFile = File("analysis_results/$datasetName/bigramfrequency.txt")
+    val trigramFile = File("analysis_results/$datasetName/trigramfrequency.txt")
+
+    if (!bigramFile.exists()) {
+        println("Hiba: A bigram gyakorisági fájl nem található ($bigramFile). Kérlek futtasd le előbb a 'ba' parancsot!")
+        return
+    }
+    if (!trigramFile.exists()) {
+        println("Hiba: A trigram gyakorisági fájl nem található ($trigramFile). Kérlek futtasd le előbb a 'ta' parancsot!")
+        return
+    }
+
+    val rawLayoutName = layoutName.removeSuffix(".txt")
+
+    // 4. Elemzések sorozatos lefuttatása
+    println("\n==================================================")
+    println("ELEMZÉS INDÍTÁSA: $rawLayoutName (Adathalmaz: $datasetName)")
+    println("==================================================")
+
+    simplesfbanalysis(layoutFile, bigramFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    alternationAnalysis(layoutFile, trigramFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    rollAnalysis(layoutFile, trigramFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    threeRollAnalysis(layoutFile, trigramFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    redirectAnalysis(layoutFile, trigramFile, rawLayoutName)
+
+    println("==================================================")
+    println("MINDEN ELEMZÉS SIKERESEN BEFEJEZŐDÖTT!")
+    println("A kimeneti fájlok a 'keyboards_simple' mappában találhatók.")
+    println("==================================================")
+}
