@@ -1,8 +1,8 @@
-Teljes 3Roll (Egykezes gördülés): 2,6066%
+Teljes 3Roll (Egykezes gördülés): 2,6213%
 
 Irány szerinti bontás:
--> Inward 3Roll: 1,4939%
--> Outward 3Roll: 1,1127%
+-> Inward 3Roll: 1,4962%
+-> Outward 3Roll: 1,1251%
 
-In:Out Ratio: 1,3426
+In:Out Ratio: 1,3298
 (A kiosztás belső orientáltságú - kényelmesebb)

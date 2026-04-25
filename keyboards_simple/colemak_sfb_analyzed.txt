@@ -1,22 +1,22 @@
-Teljes SFB (Valódi, külön gombos): 1,5283%
-Teljes SKB (Azonos gomb duplázása): 2,8069%
+Teljes SFB (Valódi, külön gombos): 1,5335%
+Teljes SKB (Azonos gomb duplázása): 2,8116%
 
 --- UJJANKÉNTI SFB ---
 Left Pinky: 0,0311%
-Left Ring: 0,0527%
+Left Ring: 0,0522%
 Left Middle: 0,1222%
-Left Index: 0,1259%
-Right Index: 0,5186%
-Right Middle: 0,4717%
-Right Ring: 0,1970%
-Right Pinky: 0,0091%
+Left Index: 0,1261%
+Right Index: 0,5184%
+Right Middle: 0,4744%
+Right Ring: 0,1981%
+Right Pinky: 0,0110%
 
 --- UJJANKÉNTI SKB (same key bigram) ---
-Left Pinky: 0,0072%
-Left Ring: 0,1023%
-Left Middle: 0,4220%
+Left Pinky: 0,0073%
+Left Ring: 0,1027%
+Left Middle: 0,4219%
 Left Index: 0,3802%
-Right Index: 0,9609%
-Right Middle: 0,4963%
+Right Index: 0,9646%
+Right Middle: 0,4959%
 Right Ring: 0,1109%
-Right Pinky: 0,3271%
+Right Pinky: 0,3281%

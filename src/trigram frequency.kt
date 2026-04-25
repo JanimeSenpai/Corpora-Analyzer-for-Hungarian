@@ -37,7 +37,7 @@ fun trigramanalysis(filename: String) {
             val words = line.split(Regex("\\s+"))
 
             for (word in words) {
-                val lowerWord = word.lowercase().replace('?',',').replace(':','.')
+                val lowerWord = word.lowercase().hungarianpunctuationreplace()
 
                 if (lowerWord.isNotEmpty() && lowerWord.all { it in validcharacters }) {
 
