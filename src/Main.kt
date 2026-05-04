@@ -50,6 +50,8 @@ fun readcommands(){
             "complete layout analysis" -> launchCompleteLayoutAnalysis()
             "cla" -> launchCompleteLayoutAnalysis()
             "sta" ->launchSpaceIncludedTrigramAnalysis()
+            "calculate word frequency"->launchCalculateWordFrequency()
+            "cwf"-> launchCalculateWordFrequency()
             "exit"-> exitProcess(0)
         }
 
