@@ -118,8 +118,11 @@ fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String)
     }
 
     // 3. Eredmények kiírása
-    val outputFileName = "keyboards_simple\\${rawLayoutName}_sfb_analyzed.txt"
-    val outputFile = File(outputFileName)
+    val datasetName = bigramFile.parentFile.name
+    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
+    resultDir.mkdirs()
+
+    val outputFile = File(resultDir, "sfb_analyzed.txt")
 
     val fingerNames = listOf(
         "Left Pinky", "Left Ring", "Left Middle", "Left Index",
@@ -153,5 +156,5 @@ fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String)
         }
     }
 
-    println("Sikeresen végrehajtva: $outputFileName létrehozva.")
+    println("Sikeresen végrehajtva: ${outputFile.path} létrehozva.")
 }

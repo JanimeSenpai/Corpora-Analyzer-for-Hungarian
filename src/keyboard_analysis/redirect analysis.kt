@@ -104,8 +104,11 @@ fun redirectAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String)
     }
 
     // 3. Eredmények kiírása
-    val outputFileName = "keyboards_simple\\${rawLayoutName}_redirect_analyzed.txt"
-    val outputFile = File(outputFileName)
+    val datasetName = trigramFile.parentFile.name
+    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
+    resultDir.mkdirs()
+
+    val outputFile = File(resultDir, "redirect_analyzed.txt")
 
     outputFile.bufferedWriter().use { writer ->
         writer.write("Teljes Redirect (Egykezes irányváltások): %.4f%%".format(totalRedirects))
@@ -122,5 +125,5 @@ fun redirectAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String)
         writer.newLine()
     }
 
-    println("Sikeresen végrehajtva: $outputFileName létrehozva. (Teljes Redirect: %.4f%%)".format(totalRedirects))
+    println("Sikeresen végrehajtva: ${outputFile.path}\" létrehozva. (Teljes Redirect: %.4f%%)".format(totalRedirects))
 }

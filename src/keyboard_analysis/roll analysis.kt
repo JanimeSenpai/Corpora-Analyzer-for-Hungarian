@@ -97,8 +97,11 @@ fun rollAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String) {
     }
 
     // 3. Eredmények kiírása
-    val outputFileName = "keyboards_simple/${rawLayoutName}_roll_analyzed.txt"
-    val outputFile = File(outputFileName)
+    val datasetName = trigramFile.parentFile.name
+    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
+    resultDir.mkdirs()
+
+    val outputFile = File(resultDir, "2roll_analyzed.txt")
 
     outputFile.bufferedWriter().use { writer ->
         writer.write("Teljes Roll (2-1 és 1-2 együttesen): %.4f%%".format(totalRolls))
@@ -112,5 +115,5 @@ fun rollAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String) {
         writer.newLine()
     }
 
-    println("Sikeresen végrehajtva: $outputFileName létrehozva. (Teljes Roll: %.4f%%)".format(totalRolls))
+    println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Teljes Roll: %.4f%%)".format(totalRolls))
 }

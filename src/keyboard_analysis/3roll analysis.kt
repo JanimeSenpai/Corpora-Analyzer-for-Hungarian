@@ -100,8 +100,11 @@ fun threeRollAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String
     val inOutRatio = if (outward3Rolls > 0) inward3Rolls / outward3Rolls else 0.0
 
     // 3. Eredmények kiírása
-    val outputFileName = "keyboards_simple\\${rawLayoutName}_3roll_analyzed.txt"
-    val outputFile = File(outputFileName)
+    val datasetName = trigramFile.parentFile.name
+    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
+    resultDir.mkdirs()
+
+    val outputFile = File(resultDir, "3roll_analyzed.txt")
 
     outputFile.bufferedWriter().use { writer ->
         writer.write("Teljes 3Roll (Egykezes gördülés): %.4f%%".format(total3Rolls))
@@ -125,5 +128,5 @@ fun threeRollAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String
         }
     }
 
-    println("Sikeresen végrehajtva: $outputFileName létrehozva. In:Out Ratio: %.4f".format(inOutRatio))
+    println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. In:Out Ratio: %.4f".format(inOutRatio))
 }

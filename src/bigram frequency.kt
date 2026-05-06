@@ -37,7 +37,7 @@ import java.io.File
 data class BigramFrequency(val bigram: String, val count: Int)
 
 fun launchbigramanalysis() {
-    println("Kérem a fájl nevét a bigram elemzéshez (A processable_texts mappában kell lennie):")
+    println("Adja meg a korpusz fájl nevét! (A processable_texts mappában kell lennie):")
     val filename = readln().trim()
 
     val file = File("processable_texts/$filename")

@@ -97,13 +97,16 @@ fun alternationAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: Stri
     }
 
     // 3. Eredmények kiírása
-    val outputFileName = "keyboards_simple\\${rawLayoutName}_alternation_analyzed.txt"
-    val outputFile = File(outputFileName)
+    val datasetName = trigramFile.parentFile.name
+    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
+    resultDir.mkdirs()
+
+    val outputFile = File(resultDir, "alternation_analyzed.txt")
 
     outputFile.bufferedWriter().use { writer ->
         writer.write("Teljes Alternálás (Alternate 1-1-1): %.4f%%".format(totalAlternation))
         writer.newLine()
     }
 
-    println("Sikeresen végrehajtva: $outputFileName létrehozva. (Eredmény: %.4f%%)".format(totalAlternation))
+    println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Eredmény: %.4f%%)".format(totalAlternation))
 }
