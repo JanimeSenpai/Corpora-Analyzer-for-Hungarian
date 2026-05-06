@@ -246,4 +246,28 @@ fun bigramanalysis(filename: String) {
         }
     }
     println("Sikeresen végrehajtva: leastfrequentVowelBigrams.txt létrehozva.")
+
+    // 8. Azonos betűkből álló (dupla) bigramok kigyűjtése
+    val doubleLetterOutputFile = File(resultDir, "doubleletterbigrams.txt")
+    doubleLetterOutputFile.bufferedWriter().use { writer ->
+        writer.write("Gyakori betűduplázások (Double Taps) a szövegben:")
+        writer.newLine()
+        writer.write("(Ezeket a betűket érdemes a mutató- vagy középső ujjra helyezni)")
+        writer.newLine()
+        writer.newLine()
+
+        // Kiszűrjük azokat a bigramokat, ahol az első és a második karakter megegyezik
+        val doubleLetterBigrams = sortedBigrams.filter {
+            it.bigram[0] == it.bigram[1]
+        }
+
+        // Kiírjuk a megszokott formátumban (Bigram \t Százalék \t Darab)
+        for (item in doubleLetterBigrams) {
+            val percentage = (item.count.toDouble() / totalBigrams) * 100
+            val formattedPercentage = "%.4f".format(percentage)
+            writer.write("${item.bigram}\t$formattedPercentage%\t${item.count}")
+            writer.newLine()
+        }
+    }
+    println("Sikeresen végrehajtva: doubleletterbigrams.txt létrehozva.")
 }
