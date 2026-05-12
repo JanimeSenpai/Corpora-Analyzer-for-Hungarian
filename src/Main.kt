@@ -1,8 +1,11 @@
 import keyboard_analysis.launch3RollAnalysis
 import keyboard_analysis.launchAlternationAnalysis
 import keyboard_analysis.launchCompleteLayoutAnalysis
+import keyboard_analysis.launchHandBalanceAnalysis
 import keyboard_analysis.launchRedirectAnalysis
 import keyboard_analysis.launchRollAnalysis
+import keyboard_analysis.launchRowUsageAnalysis
+import keyboard_analysis.launchSpaceSfs1Analysis
 import keyboard_analysis.launchsimplesfbanalysis
 import kotlin.system.exitProcess
 
@@ -51,7 +54,10 @@ fun readcommands(){
             "cla" -> launchCompleteLayoutAnalysis()
             "sta" ->launchSpaceIncludedTrigramAnalysis()
             "calculate word frequency"->launchCalculateWordFrequency()
+            "sfs1" ->launchSpaceSfs1Analysis()
             "cwf"-> launchCalculateWordFrequency()
+            "hb"-> launchHandBalanceAnalysis()
+            "ru"->launchRowUsageAnalysis()//row usage
             "exit"-> exitProcess(0)
         }
 

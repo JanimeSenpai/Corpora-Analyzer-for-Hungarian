@@ -83,6 +83,6 @@ fun letterfrequency(filepath: String) {
             writer.write("$charDisplay\t$formattedPercentage%\t${item.count}")
             writer.newLine()
         }
-    }
-    println("letterfrequency calculation finished.")
+}
+println("letterfrequency calculation finished.")
 }

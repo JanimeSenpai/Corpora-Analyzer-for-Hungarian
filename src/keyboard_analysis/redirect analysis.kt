@@ -35,7 +35,7 @@ fun redirectAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String)
         lines.forEachIndexed { fingerIndex, line ->
             if (fingerIndex < 8) {
                 val hand = if (fingerIndex < 4) 0 else 1 // 0 = Bal, 1 = Jobb
-                for (char in line.lowercase().filter { !it.isWhitespace() }) {
+                for (char in line.lowercase().filter { !it.isWhitespace()&&it!='_' }) {
                     charMap[char] = Pair(hand, fingerIndex)
                 }
             }

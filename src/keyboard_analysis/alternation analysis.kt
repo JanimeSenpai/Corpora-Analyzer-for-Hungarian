@@ -51,7 +51,7 @@ fun alternationAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: Stri
                 // A 0, 1, 2, 3-as indexű sorok a bal kéz ujjai, a 4, 5, 6, 7-esek a jobb kézé
                 val hand = if (fingerIndex < 4) 0 else 1
 
-                for (char in line.lowercase().filter { !it.isWhitespace() }) {
+                for (char in line.lowercase().filter { !it.isWhitespace()&&it!='_' }) {
                     charToHand[char] = hand
                 }
             }

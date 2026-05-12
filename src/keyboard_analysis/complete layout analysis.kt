@@ -21,10 +21,15 @@ fun launchCompleteLayoutAnalysis() {
     var datasetName = readln().trim()
     if (!datasetName.endsWith(".txt")) datasetName += ".txt"
 
-    // 3. Fájlok ellenőrzése (Bigram és Trigram is kell a teljes elemzéshez)
+    // 3. Fájlok ellenőrzése (Karakter, Bigram és Trigram is kell a teljes elemzéshez)
+    val charFreqFile = File("analysis_results/$datasetName/letterfrequency.txt")
     val bigramFile = File("analysis_results/$datasetName/bigramfrequency.txt")
     val trigramFile = File("analysis_results/$datasetName/trigramfrequency.txt")
 
+    if (!charFreqFile.exists()) {
+        println("Hiba: A karaktergyakorisági fájl nem található ($charFreqFile). Kérlek futtasd le előbb a megfelelő adatelőkészítő parancsot!")
+        return
+    }
     if (!bigramFile.exists()) {
         println("Hiba: A bigram gyakorisági fájl nem található ($bigramFile). Kérlek futtasd le előbb a 'ba' parancsot!")
         return
@@ -41,6 +46,14 @@ fun launchCompleteLayoutAnalysis() {
     println("ELEMZÉS INDÍTÁSA: $rawLayoutName (Adathalmaz: $datasetName)")
     println("==================================================")
 
+    // ÚJ: Karakter alapú elemzések
+    handBalanceAnalysis(layoutFile, charFreqFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    rowUsageAnalysis(layoutFile, charFreqFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    // Korábbi elemzések
     simplesfbanalysis(layoutFile, bigramFile, rawLayoutName)
     println("--------------------------------------------------")
 
@@ -54,9 +67,12 @@ fun launchCompleteLayoutAnalysis() {
     println("--------------------------------------------------")
 
     redirectAnalysis(layoutFile, trigramFile, rawLayoutName)
+    println("--------------------------------------------------")
+
+    spaceSfs1Analysis(layoutFile, trigramFile, rawLayoutName)
 
     println("==================================================")
     println("MINDEN ELEMZÉS SIKERESEN BEFEJEZŐDÖTT!")
-    println("A kimeneti fájlok a 'keyboards_simple' mappában találhatók.")
+    println("A kimeneti fájlok az 'analysis_results/$datasetName/$rawLayoutName' mappában találhatók.")
     println("==================================================")
 }

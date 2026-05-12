@@ -65,7 +65,7 @@ fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String)
     layoutFile.useLines { lines ->
         lines.forEachIndexed { fingerIndex, line ->
             if (fingerIndex < 8) {
-                for (char in line.lowercase().filter { !it.isWhitespace() }) {
+                for (char in line.lowercase().filter { !it.isWhitespace()&&it!='_' }) {
                     charToFinger[char] = fingerIndex
                 }
             }
