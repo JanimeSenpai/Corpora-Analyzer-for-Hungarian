@@ -164,6 +164,6 @@ fun spaceSfs1Analysis(layoutFile: File, trigramFile: File, rawLayoutName: String
         writer.newLine()
         for (i in 0 until 8) { writer.write("${fingerNames[i]}: %.4f%%".format(fingerSfs1[i])); writer.newLine() }
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "space_sfs1_total", totalSfs1)
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Teljes Space SFS-1 Penalty: %.4f)".format(totalSfsPenalty))
 }

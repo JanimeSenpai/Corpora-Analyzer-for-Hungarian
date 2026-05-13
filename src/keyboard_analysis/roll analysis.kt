@@ -114,6 +114,6 @@ fun rollAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String) {
         writer.write("-> 1-2 Rollok (Más-Azonos-Azonos): %.4f%%".format(rolls1_2))
         writer.newLine()
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "2roll", totalRolls)
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Teljes Roll: %.4f%%)".format(totalRolls))
 }

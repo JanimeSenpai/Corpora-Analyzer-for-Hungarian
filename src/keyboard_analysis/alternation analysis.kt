@@ -107,6 +107,6 @@ fun alternationAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: Stri
         writer.write("Teljes Alternálás (Alternate 1-1-1): %.4f%%".format(totalAlternation))
         writer.newLine()
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "alternation_total", totalAlternation)
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Eredmény: %.4f%%)".format(totalAlternation))
 }

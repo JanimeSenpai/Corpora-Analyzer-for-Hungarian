@@ -46,14 +46,15 @@ fun launchCompleteLayoutAnalysis() {
     println("ELEMZÉS INDÍTÁSA: $rawLayoutName (Adathalmaz: $datasetName)")
     println("==================================================")
 
-    // ÚJ: Karakter alapú elemzések
+    // Korábbi nyers adatok törlése
+    clearRawMetrics(datasetName, rawLayoutName)
+
     handBalanceAnalysis(layoutFile, charFreqFile, rawLayoutName)
     println("--------------------------------------------------")
 
     rowUsageAnalysis(layoutFile, charFreqFile, rawLayoutName)
     println("--------------------------------------------------")
 
-    // Korábbi elemzések
     simplesfbanalysis(layoutFile, bigramFile, rawLayoutName)
     println("--------------------------------------------------")
 

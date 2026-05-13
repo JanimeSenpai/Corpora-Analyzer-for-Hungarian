@@ -155,6 +155,6 @@ fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String)
             writer.newLine()
         }
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "sfb_total", totalSfb)
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva.")
 }

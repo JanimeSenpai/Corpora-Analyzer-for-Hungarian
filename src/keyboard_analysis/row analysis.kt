@@ -121,6 +121,9 @@ fun rowUsageAnalysis(layoutFile: File, charFreqFile: File, rawLayoutName: String
             writer.newLine()
         }
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "row_num", rowRatios[0])
+    saveRawMetric(datasetName, rawLayoutName, "row_top", rowRatios[1])
+    saveRawMetric(datasetName, rawLayoutName, "row_home", rowRatios[2])
+    saveRawMetric(datasetName, rawLayoutName, "row_bottom", rowRatios[3])
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Home sor aránya: %.2f%%)".format(rowRatios[2]))
 }

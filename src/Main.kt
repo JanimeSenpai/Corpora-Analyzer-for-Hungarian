@@ -1,6 +1,7 @@
 import keyboard_analysis.launch3RollAnalysis
 import keyboard_analysis.launchAlternationAnalysis
 import keyboard_analysis.launchCompleteLayoutAnalysis
+import keyboard_analysis.launchGenerateSummaryCsv
 import keyboard_analysis.launchHandBalanceAnalysis
 import keyboard_analysis.launchRedirectAnalysis
 import keyboard_analysis.launchRollAnalysis
@@ -58,6 +59,8 @@ fun readcommands(){
             "cwf"-> launchCalculateWordFrequency()
             "hb"-> launchHandBalanceAnalysis()
             "ru"->launchRowUsageAnalysis()//row usage
+            "generate csv" -> launchGenerateSummaryCsv()
+            "gcsv" -> launchGenerateSummaryCsv()
             "exit"-> exitProcess(0)
         }
 

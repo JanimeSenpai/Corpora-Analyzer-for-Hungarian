@@ -111,6 +111,8 @@ fun handBalanceAnalysis(layoutFile: File, charFreqFile: File, rawLayoutName: Str
         writer.write("Jobb kéz: %.4f%%".format(rightHandTotal))
         writer.newLine()
     }
+    saveRawMetric(datasetName, rawLayoutName, "left_hand", leftRatio)
+    saveRawMetric(datasetName, rawLayoutName, "right_hand", rightRatio)
 
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Bal: %.2f%% - Jobb: %.2f%%)".format(leftRatio, rightRatio))
 }

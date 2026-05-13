@@ -127,6 +127,6 @@ fun threeRollAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String
             writer.write("(A kiosztás külső orientáltságú - megterhelőbb)")
         }
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "3roll", total3Rolls)
     println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. In:Out Ratio: %.4f".format(inOutRatio))
 }

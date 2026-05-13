@@ -124,6 +124,6 @@ fun redirectAnalysis(layoutFile: File, trigramFile: File, rawLayoutName: String)
         writer.write("-> Jobb kéz Redirect: %.4f%%".format(rightHandRedirects))
         writer.newLine()
     }
-
+    saveRawMetric(datasetName, rawLayoutName, "redirect_total", totalRedirects)
     println("Sikeresen végrehajtva: ${outputFile.path}\" létrehozva. (Teljes Redirect: %.4f%%)".format(totalRedirects))
 }
