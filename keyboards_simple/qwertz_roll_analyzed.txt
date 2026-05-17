@@ -1,5 +1,0 @@
-Teljes Roll (2-1 és 1-2 együttesen): 41,8792%
-
-Részletes bontás:
--> 2-1 Rollok (Azonos-Azonos-Más): 20,9081%
--> 1-2 Rollok (Más-Azonos-Azonos): 20,9711%

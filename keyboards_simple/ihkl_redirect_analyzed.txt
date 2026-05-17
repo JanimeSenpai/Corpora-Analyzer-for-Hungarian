@@ -1,6 +1,0 @@
-Teljes Redirect (Egykezes irányváltások): 1,0925%
-(Cél: Ezt az értéket minél alacsonyabban tartani)
-
-Kéz szerinti bontás:
--> Bal kéz Redirect: 0,1537%
--> Jobb kéz Redirect: 0,9388%
