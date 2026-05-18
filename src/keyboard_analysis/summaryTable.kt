@@ -41,11 +41,12 @@ fun generateSummaryCsv(datasetName: String) {
     // Itt definiáljuk a CSV oszlopait és azok sorrendjét
     val metricKeys = listOf(
         "left_hand", "right_hand",
-        "row_num", "row_top", "row_home", "row_bottom",
+        "row_home",
         "sfb_total", "space_sfs1_total",
         "alternation_total",
         "2roll", "3roll",
         "redirect_total",
+        "pinky_off"
     )
 
     val summaryFile = File(baseDir, "összesítő_táblázat.csv")

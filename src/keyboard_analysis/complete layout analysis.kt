@@ -52,6 +52,9 @@ fun launchCompleteLayoutAnalysis() {
     handBalanceAnalysis(layoutFile, charFreqFile, rawLayoutName)
     println("--------------------------------------------------")
 
+    pinkyOffAnalysis(layoutFile, charFreqFile, rawLayoutName)
+    println("--------------------------------------------------")
+
     rowUsageAnalysis(layoutFile, charFreqFile, rawLayoutName)
     println("--------------------------------------------------")
 

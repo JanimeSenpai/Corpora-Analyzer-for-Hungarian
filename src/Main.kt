@@ -3,6 +3,7 @@ import keyboard_analysis.launchAlternationAnalysis
 import keyboard_analysis.launchCompleteLayoutAnalysis
 import keyboard_analysis.launchGenerateSummaryCsv
 import keyboard_analysis.launchHandBalanceAnalysis
+import keyboard_analysis.launchPinkyOffAnalysis
 import keyboard_analysis.launchRedirectAnalysis
 import keyboard_analysis.launchRollAnalysis
 import keyboard_analysis.launchRowUsageAnalysis
@@ -53,6 +54,8 @@ fun readcommands(){
             "lra"->launchRedirectAnalysis()
             "complete layout analysis" -> launchCompleteLayoutAnalysis()
             "cla" -> launchCompleteLayoutAnalysis()
+            "complete corpus analysis" -> launchCompleteCorpusAnalysis()
+            "cca" -> launchCompleteCorpusAnalysis()
             "sta" ->launchSpaceIncludedTrigramAnalysis()
             "calculate word frequency"->launchCalculateWordFrequency()
             "sfs1" ->launchSpaceSfs1Analysis()
@@ -61,6 +64,8 @@ fun readcommands(){
             "ru"->launchRowUsageAnalysis()//row usage
             "generate csv" -> launchGenerateSummaryCsv()
             "gcsv" -> launchGenerateSummaryCsv()
+            "po" -> launchPinkyOffAnalysis()
+            "pinky off" -> launchPinkyOffAnalysis()
             "exit"-> exitProcess(0)
         }
 
