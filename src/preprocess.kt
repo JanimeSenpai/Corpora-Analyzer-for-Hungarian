@@ -1,6 +1,8 @@
 import java.io.File
 
-
+enum class Locale {
+    HU, EN
+}
 fun preprocess() {
     println("Enter the filename")
     val filename =readLine()!!

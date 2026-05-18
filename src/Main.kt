@@ -15,6 +15,8 @@ fun main() {
 commandLineInterface()
 }
 
+val currentLocale: Locale = Locale.HU
+
 fun commandLineInterface(){
     println("this is the command line interface of corpora analyzer")
     println("for available commands enter \"commands\"")
