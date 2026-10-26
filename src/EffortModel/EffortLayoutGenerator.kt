@@ -2,18 +2,12 @@ package EffortModel
 
 import kotlin.math.*
 
-data class FingerAnatomy(
-    val baseEffort: Double, // Pf
-    val homeOffsetX: Double,
-    val homeOffsetY: Double
-)
-
 class ColemakDhEffortGenerator(
     private val keyboardHalf: KeyboardHalf,
     private val columnConfigs: List<ColumnConfig>,
     private val angleOfApproachDegrees: Double = 10.0,
     private val lateralPenaltyPx: Double = 2.0,
-    private val distancePenaltyPd: Double = 1.35, // Finomhangolva a kerekítési határokhoz (1.8, 2.4, 2.2)
+    private val distancePenaltyPd: Double = 1.35,
     private val activationMargin: Double = 0.3,
     private val useOptimalFingerAssignment: Boolean = true
 ) {
@@ -35,20 +29,20 @@ class ColemakDhEffortGenerator(
         val dx = targetCenter.x - homeX
         val dy = targetCenter.y - homeY
 
-        // 3. ELŐSZÖR: A mozgásvektor felbontása az alkar 10 fokos megközelítési szöge szerint
+        // 1. Távolság a fizikai gomb (0.3u margójú) aktivációs dobozának legközelebbi pontjáig
+        val actDx = sign(dx) * max(0.0, abs(dx) - activationMargin)
+        val actDy = sign(dy) * max(0.0, abs(dy) - activationMargin)
+
+        // 2. Az elmozdulásvektor felbontása az alkar 10 fokos megközelítési szöge szerint
         val theta = Math.toRadians(angleOfApproachDegrees) * xSign
-        val rotX = dx * cos(theta) + dy * sin(theta)
-        val rotY = -dx * sin(theta) + dy * cos(theta)
+        val distX = abs(actDx * cos(theta) + actDy * sin(theta))
+        val distY = abs(-actDx * sin(theta) + actDy * cos(theta))
 
-        // 4. MÁSODSZOR: Távolság az aktivációs terület (0.3u margó) határáig a forgatott térben
-        val distX = max(0.0, abs(rotX) - activationMargin)
-        val distY = max(0.0, abs(rotY) - activationMargin)
-
-        // 5. Fitts törvénye szerinti logaritmikus büntetés
+        // 3. Fitts törvénye szerinti logaritmikus büntetés
         val fX = log2(1.0 + distancePenaltyPd * distX)
         val fY = log2(1.0 + distancePenaltyPd * distY)
 
-        // 6. Eredő terhelés
+        // 4. Eredő terhelés
         val pf = finger.baseEffort
         return pf + hypot(pf * fY, lateralPenaltyPx * fX)
     }
@@ -57,12 +51,10 @@ class ColemakDhEffortGenerator(
         val targetCenter = keyboardHalf.getPhysicalCoordinate(targetRow, targetCol)
 
         return if (useOptimalFingerAssignment) {
-            // Colemak-DH "Standard Keyboard" mód: a legkisebb terhelést adó ujjat választja
             handFingers.minOf { (anchorCol, finger) ->
                 calculateEffortForFinger(targetCenter, anchorCol, finger)
             }
         } else {
-            // Colemak-DH "Traditional finger pattern" mód: az oszlophoz rendelt ujjat használja
             val config = columnConfigs.find { it.colIndex == targetCol }
                 ?: throw IllegalArgumentException("Hiányzó konfiguráció a(z) $targetCol. oszlophoz!")
             calculateEffortForFinger(targetCenter, config.anchorColIndex, config.finger)
