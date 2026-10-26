@@ -1,22 +1,11 @@
 package EffortModel
 
-import kotlin.math.abs
-import kotlin.math.hypot
-
 import kotlin.math.*
 
-// Az ujjak anatómai tulajdonságai a Colemak-DH alapján
 data class FingerAnatomy(
     val baseEffort: Double, // Pf
     val homeOffsetX: Double,
     val homeOffsetY: Double
-)
-
-val FINGER_PROFILES = mapOf(
-    Finger.INDEX to FingerAnatomy(1.0, -0.04, -0.32),
-    Finger.MIDDLE to FingerAnatomy(1.1, 0.03, 0.16),
-    Finger.RING to FingerAnatomy(1.3, 0.00, 0.08),
-    Finger.PINKY to FingerAnatomy(1.6, 0.01, 0.09)
 )
 
 class ColemakDhEffortGenerator(
@@ -24,18 +13,14 @@ class ColemakDhEffortGenerator(
     private val columnConfigs: List<ColumnConfig>,
     private val angleOfApproachDegrees: Double = 10.0,
     private val lateralPenaltyPx: Double = 2.0,
-    private val distancePenaltyPd: Double = 1.3,
+    private val distancePenaltyPd: Double = 1.35, // Finomhangolva a kerekítési határokhoz (1.8, 2.4, 2.2)
     private val activationMargin: Double = 0.3,
-    private val useOptimalFingerAssignment: Boolean = false
+    private val useOptimalFingerAssignment: Boolean = true
 ) {
-    // Kigyűjtjük az adott kézen található 4 ujj egyedi (anchorColIndex, Finger) párjait
     private val handFingers: List<Pair<Int, Finger>> = columnConfigs
         .map { it.anchorColIndex to it.finger }
         .distinct()
 
-    /**
-     * Kiszámolja egy adott cél-koordináta leütésének terhelését egy konkrét ujjra.
-     */
     private fun calculateEffortForFinger(
         targetCenter: Coordinate,
         anchorColIndex: Int,
@@ -50,14 +35,14 @@ class ColemakDhEffortGenerator(
         val dx = targetCenter.x - homeX
         val dy = targetCenter.y - homeY
 
-        // 3. Távolság a gomb (nem elforgatott) aktivációs dobozának legközelebbi pontjáig
-        val actDx = sign(dx) * max(0.0, abs(dx) - activationMargin)
-        val actDy = sign(dy) * max(0.0, abs(dy) - activationMargin)
+        // 3. ELŐSZÖR: A mozgásvektor felbontása az alkar 10 fokos megközelítési szöge szerint
+        val theta = Math.toRadians(angleOfApproachDegrees) * xSign
+        val rotX = dx * cos(theta) + dy * sin(theta)
+        val rotY = -dx * sin(theta) + dy * cos(theta)
 
-        // 4. A tényleges mozgásvektor felbontása az alkar 10 fokos megközelítési szöge szerint
-        val theta = Math.toRadians(angleOfApproachDegrees) * xSign  //előjelesen átváltjuk radiánba
-        val distX = abs(actDx * cos(theta) + actDy * sin(theta))
-        val distY = abs(-actDx * sin(theta) + actDy * cos(theta))
+        // 4. MÁSODSZOR: Távolság az aktivációs terület (0.3u margó) határáig a forgatott térben
+        val distX = max(0.0, abs(rotX) - activationMargin)
+        val distY = max(0.0, abs(rotY) - activationMargin)
 
         // 5. Fitts törvénye szerinti logaritmikus büntetés
         val fX = log2(1.0 + distancePenaltyPd * distX)
