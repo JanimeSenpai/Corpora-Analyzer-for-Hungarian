@@ -1,4 +1,4 @@
-package keyboard_analysis
+package EffortModel
 data class Coordinate(val x: Double, val y: Double)
 
 enum class Hand {
@@ -12,14 +12,35 @@ enum class StaggerType {
     COLUMNAR_STAGGER
 }
 
+/**
+ * Az ujjak anatómiai paraméterei a Colemak-DH dokumentáció alapján:
+ * - baseEffort (Pf): Az ujj alap terhelési szorzója
+ * - homeOffsetX: Vízszintes eltolás az alapsori gomb középpontjától (bal kézre értelmezve)
+ * - homeOffsetY: Függőleges eltolás az alapsori gomb középpontjától (+ felfelé, - lefelé)
+ */
+enum class Finger(
+    val baseEffort: Double,
+    val homeOffsetX: Double,
+    val homeOffsetY: Double
+) {
+    INDEX(baseEffort = 1.0, homeOffsetX = -0.04, homeOffsetY = -0.32),
+    MIDDLE(baseEffort = 1.1, homeOffsetX = 0.03, homeOffsetY = 0.16),
+    RING(baseEffort = 1.3, homeOffsetX = 0.00, homeOffsetY = 0.08),
+    PINKY(baseEffort = 1.6, homeOffsetX = 0.01, homeOffsetY = 0.09)
+}
+
+data class ColumnConfig(
+    val colIndex: Int,
+    val anchorColIndex: Int,
+    val finger: Finger
+)
+
 class KeyboardHalf(
     val hand: Hand,
     val staggerType: StaggerType,
     val numRows: Int,
     val numColumns: Int,
     val offsets: List<Double>,
-    // Alapértelmezett érték: mivel alulról mindig a második az alapsor,
-    // az indexe (0-tól indulva) pontosan numRows - 2 lesz.
     val homeRowIndex: Int = numRows - 2
 ) {
     fun getPhysicalCoordinate(rowIndex: Int, colIndex: Int): Coordinate {
@@ -35,7 +56,6 @@ class KeyboardHalf(
                 y += offsets.getOrElse(colIndex) { 0.0 }
             }
         }
-
         return Coordinate(x, y)
     }
 }
