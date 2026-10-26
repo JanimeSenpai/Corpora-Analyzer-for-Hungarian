@@ -17,6 +17,8 @@ object EffortHeatmapRenderer {
         rightHalf: KeyboardHalf,
         leftEffort: List<List<Double>>,
         rightEffort: List<List<Double>>,
+        leftcolumnConfig: List<ColumnConfig>,
+        rightcolumnConfig: List<ColumnConfig>,
         outputPath: String = "full_keyboard_heatmap.png"
     ) {
         val keySize = 65
@@ -89,11 +91,23 @@ object EffortHeatmapRenderer {
             g2d.drawString(text, textX, textY)
         }
 
+
+        // Bal kéz home tartományának meghatározása a ring és middle ujjak horgonyaiból
+        val leftHomeCols = leftcolumnConfig.filter { it.finger == Finger.RING || it.finger == Finger.MIDDLE }.map { it.anchorColIndex }
+        val leftHomeRange = ((leftHomeCols.minOrNull() ?: 0) - 1)..((leftHomeCols.maxOrNull() ?: 0) + 1)
+
+        // Jobb kéz home tartományának meghatározása a ring és middle ujjak horgonyaiból
+        val rightHomeCols = rightcolumnConfig.filter { it.finger == Finger.RING || it.finger == Finger.MIDDLE }.map { it.anchorColIndex }
+        val rightHomeRange = ((rightHomeCols.minOrNull() ?: 0) - 1)..((rightHomeCols.maxOrNull() ?: 0) + 1)
+
+        println("lefthomerange=$leftHomeRange righthomerange=$rightHomeRange")
+
+
         // Bal kéz kirajzolása
         for (r in 0 until leftHalf.numRows) {
             for (c in 0 until leftHalf.numColumns) {
                 val coord = leftHalf.getPhysicalCoordinate(r, c)
-                val isHome = (r == leftHalf.homeRowIndex && c in 1..4)
+                val isHome = (r == leftHalf.homeRowIndex && c in leftHomeRange)
                 drawKey(coord.x - leftMinX, coord.y - globalMinY, leftEffort[r][c], isHome)
             }
         }
@@ -102,7 +116,7 @@ object EffortHeatmapRenderer {
         for (r in 0 until rightHalf.numRows) {
             for (c in 0 until rightHalf.numColumns) {
                 val coord = rightHalf.getPhysicalCoordinate(r, c)
-                val isHome = (r == rightHalf.homeRowIndex && c in 1..4)
+                val isHome = (r == rightHalf.homeRowIndex && c in rightHomeRange)
                 drawKey(rightStartX + (coord.x - rightMinX), coord.y - globalMinY, rightEffort[r][c], isHome)
             }
         }

@@ -1,5 +1,6 @@
 import EffortModel.ColemakDhEffortGenerator
 import EffortModel.ColumnConfig
+import EffortModel.CustomKeyboardEffortGenerator
 import EffortModel.EffortHeatmapRenderer
 import EffortModel.Finger
 import EffortModel.Hand
@@ -7,6 +8,9 @@ import EffortModel.KeyboardHalf
 import EffortModel.StaggerType
 
 fun main() {
+    testMyCustomColStaggerKeyboard()
+}
+fun standardKeyboardTest(){
     // Standard ISO/ANSI sor-eltolások az alapsorhoz (2. index) képest:
 
     // Num (-0.5u), Top (-0.25u), Home (0.0u), Bottom (+0.5u)
@@ -34,12 +38,135 @@ fun main() {
     // 1. Kép: Hagyományos ujjrend (a PDF 8. oldalának alsó ábrája)
     val leftTrad = ColemakDhEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = false).generateEffortMatrix()
     val rightTrad = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = false).generateEffortMatrix()
-    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftTrad, rightTrad, "standard_traditional_heatmap.png")
+    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftTrad, rightTrad,leftConfigs,rightConfigs, "standard_traditional_heatmap.png")
 
     // 2. Kép: Optimális ujjrend (a PDF 8. oldalának felső ábrája)
     val leftOpt = ColemakDhEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
     val rightOpt = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
-    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt, "standard_optimal_heatmap.png")
+    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt,leftConfigs,rightConfigs, "standard_optimal_heatmap.png")
 
     println("Képek sikeresen legenerálva: standard_traditional_heatmap.png és standard_optimal_heatmap.png")
+}
+
+fun testMySymmetricalRowstaggerKeyboard(){
+
+    // szimmetrikus eltolások a fizikai megvalósításnak megfelelően
+
+    // Num (-0.5u), Top (-0.25u), Home (0.0u), Bottom (+0.5u)
+    val offsetsright = listOf(0.25, 0.25, 0.0, 0.5)
+    val offsetsleft = listOf(-0.25, -0.25, 0.0, -0.5)
+    val leftHalf = KeyboardHalf(Hand.LEFT, StaggerType.ROW_STAGGER, 4, 8, offsetsleft)
+    val leftConfigs = listOf(
+        ColumnConfig(colIndex = 0, anchorColIndex = 2, finger = Finger.PINKY),  // Külső extra 2
+        ColumnConfig(colIndex = 1, anchorColIndex = 2, finger = Finger.PINKY),  // Külső extra 1
+        ColumnConfig(colIndex = 2, anchorColIndex = 2, finger = Finger.PINKY),  // Kisujj alapsor (anchor = 2)
+        ColumnConfig(colIndex = 3, anchorColIndex = 3, finger = Finger.RING),   // Gyűrűs alapsor (anchor = 3)
+        ColumnConfig(colIndex = 4, anchorColIndex = 4, finger = Finger.MIDDLE), // Középső alapsor (anchor = 4)
+        ColumnConfig(colIndex = 5, anchorColIndex = 5, finger = Finger.INDEX),  // MUTATÓ ALAPSOR -> ITT LESZ AZ 1.0 (anchor = 5)
+        ColumnConfig(colIndex = 6, anchorColIndex = 5, finger = Finger.INDEX),  // Belső mutató 1 (a mutatóujj horgonytól mérve)
+        ColumnConfig(colIndex = 7, anchorColIndex = 5, finger = Finger.INDEX)   // Belső mutató 2
+    )
+
+    val rightHalf = KeyboardHalf(Hand.RIGHT, StaggerType.ROW_STAGGER, 4, 8, offsetsright)
+    val rightConfigs = listOf(
+        ColumnConfig(colIndex = 0, anchorColIndex = 2, finger = Finger.INDEX),  // Belső mutató 2 (a mutatóujj horgonytól mérve)
+        ColumnConfig(colIndex = 1, anchorColIndex = 2, finger = Finger.INDEX),  // Belső mutató 1
+        ColumnConfig(colIndex = 2, anchorColIndex = 2, finger = Finger.INDEX),  // MUTATÓ ALAPSOR -> ITT LESZ AZ 1.0 (anchor = 2)
+        ColumnConfig(colIndex = 3, anchorColIndex = 3, finger = Finger.MIDDLE), // Középső alapsor (anchor = 3)
+        ColumnConfig(colIndex = 4, anchorColIndex = 4, finger = Finger.RING),   // Gyűrűs alapsor (anchor = 4)
+        ColumnConfig(colIndex = 5, anchorColIndex = 5, finger = Finger.PINKY),  // Kisujj alapsor (anchor = 5)
+        ColumnConfig(colIndex = 6, anchorColIndex = 5, finger = Finger.PINKY),  // Külső extra 1
+        ColumnConfig(colIndex = 7, anchorColIndex = 5, finger = Finger.PINKY)   // Külső extra 2
+    )
+
+
+
+   // Kép: Optimális ujjrend (a PDF 8. oldalának felső ábrája)
+    val leftOpt = ColemakDhEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
+    val rightOpt = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
+    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt, leftConfigs,rightConfigs,"MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
+
+    println("Képek sikeresen legenerálva: standard_traditional_heatmap.png és standard_optimal_heatmap.png")
+
+
+}
+
+fun testMyCustomColStaggerKeyboard() {
+    // A KLE fájlodból kinyert pontos oszlop-eltolások (a középső ujj 0.00u szintjéhez képest):
+    // Bal oldal 8 oszlopa:
+    // Col 0 (Caps/Tab/Bksp): +0.50u
+    // Col 1 (Ö / Ú / C):     +0.50u
+    // Col 2 (I / Ó / Ü):     +0.50u
+    // Col 3 (O / U / .):     +0.25u (Gyűrűs)
+    // Col 4 (E / Á / ,):      0.00u (Középső)
+    // Col 5 (A / Y / É):     +0.25u (Mutató - homing)
+    // Col 6 (Ő / Í / Ű):     +0.38u (Belső mutató 1)
+    // Col 7 (Alt / Esc / C):  0.10u (Belső mutató 2)
+    val leftColOffsets = listOf(0.50, 0.50, 0.50, 0.25, 0.00, 0.25, 0.38, 0.10)
+
+    // Jobb oldal 8 oszlopa:
+    // Col 0 (; / *):         +0.10u (Belső mutató 2)
+    // Col 1 (B / F / V):     +0.38u (Belső mutató 1)
+    // Col 2 (L / Z / R):     +0.25u (Mutató - homing)
+    // Col 3 (T / K / M):      0.00u (Középső)
+    // Col 4 (S / D / G):     +0.25u (Gyűrűs)
+    // Col 5 (N / H / J):     +0.50u (Kisujj alap)
+    // Col 6 (P / Q / -):     +0.50u (Kisujj külső 1)
+    // Col 7 (- / layer):     +0.50u (Kisujj külső 2)
+    val rightColOffsets = listOf(0.10, 0.38, 0.25, 0.00, 0.25, 0.50, 0.50, 0.50)
+
+    // 5 soros modell (0: F-sor, 1: Számsor, 2: Felső sor, 3: Alapsor [homeRowIndex = 3], 4: Alsó sor)
+    val leftHalf = KeyboardHalf(
+        hand = Hand.LEFT,
+        staggerType = StaggerType.COLUMNAR_STAGGER,
+        numRows = 5,
+        numColumns = 8,
+        offsets = leftColOffsets,
+        homeRowIndex = 3
+    )
+
+    val leftConfigs = listOf(
+        ColumnConfig(0, anchorColIndex = 2, Finger.PINKY),  // Külső kisujj 2 (CapsLock)
+        ColumnConfig(1, anchorColIndex = 2, Finger.PINKY),  // Külső kisujj 1 (Ö)
+        ColumnConfig(2, anchorColIndex = 2, Finger.PINKY),  // Kisujj alap (I) -> Ha az Ö az alap, írd át anchorColIndex = 1-re!
+        ColumnConfig(3, anchorColIndex = 3, Finger.RING),   // Gyűrűs (O)
+        ColumnConfig(4, anchorColIndex = 4, Finger.MIDDLE), // Középső (E)
+        ColumnConfig(5, anchorColIndex = 5, Finger.INDEX),  // Mutató (A - homing)
+        ColumnConfig(6, anchorColIndex = 5, Finger.INDEX),  // Belső mutató 1 (Ő)
+        ColumnConfig(7, anchorColIndex = 5, Finger.INDEX)   // Belső mutató 2 (Alt/C)
+    )
+
+    val rightHalf = KeyboardHalf(
+        hand = Hand.RIGHT,
+        staggerType = StaggerType.COLUMNAR_STAGGER,
+        numRows = 5,
+        numColumns = 8,
+        offsets = rightColOffsets,
+        homeRowIndex = 3
+    )
+
+    val rightConfigs = listOf(
+        ColumnConfig(0, anchorColIndex = 2, Finger.INDEX),  // Belső mutató 2 (;)
+        ColumnConfig(1, anchorColIndex = 2, Finger.INDEX),  // Belső mutató 1 (B)
+        ColumnConfig(2, anchorColIndex = 2, Finger.INDEX),  // Mutató (L - homing)
+        ColumnConfig(3, anchorColIndex = 3, Finger.MIDDLE), // Középső (T)
+        ColumnConfig(4, anchorColIndex = 4, Finger.RING),   // Gyűrűs (S)
+        ColumnConfig(5, anchorColIndex = 5, Finger.PINKY),  // Kisujj alap (N)
+        ColumnConfig(6, anchorColIndex = 5, Finger.PINKY),  // Külső kisujj 1 (P)
+        ColumnConfig(7, anchorColIndex = 5, Finger.PINKY)   // Külső kisujj 2 (-)
+    )
+
+    val leftEffort = CustomKeyboardEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
+    val rightEffort = CustomKeyboardEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
+
+    EffortHeatmapRenderer.renderFullKeyboard(
+        leftHalf = leftHalf,
+        rightHalf = rightHalf,
+        leftEffort = leftEffort,
+        rightEffort = rightEffort,
+        leftConfigs,
+        rightConfigs,
+        outputPath = "my_colstagger_heatmap.png"
+    )
+    println("A saját billentyűzet hőtérképe legenerálva: my_colstagger_heatmap.png")
 }
