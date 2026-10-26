@@ -10,7 +10,7 @@ fun main() {
     // Standard ISO/ANSI sor-eltolások az alapsorhoz (2. index) képest:
 
     // Num (-0.5u), Top (-0.25u), Home (0.0u), Bottom (+0.5u)
-    val standardRowOffsets = listOf(-0.5, -0.25, 0.0, 0.5)
+    val standardRowOffsets = listOf(-0.75, -0.25, 0.0, 0.5)
     val leftHalf = KeyboardHalf(Hand.LEFT, StaggerType.ROW_STAGGER, 4, 6, standardRowOffsets)
     val leftConfigs = listOf(
         ColumnConfig(0, anchorColIndex = 1, Finger.PINKY),  // Külső kisujj oszlop (Tab / CapsLock sáv)

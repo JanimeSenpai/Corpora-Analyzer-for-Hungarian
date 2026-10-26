@@ -7,9 +7,10 @@ class ColemakDhEffortGenerator(
     private val columnConfigs: List<ColumnConfig>,
     private val angleOfApproachDegrees: Double = 10.0,
     private val lateralPenaltyPx: Double = 2.0,
-    private val distancePenaltyPd: Double = 1.35,
+    private val distancePenaltyPd: Double = 1.3, // log2-höz tartozó skálázó konstans (1.30 - 1.35)
     private val activationMargin: Double = 0.3,
-    private val useOptimalFingerAssignment: Boolean = true
+    private val useOptimalFingerAssignment: Boolean = true,
+    private val boxInKeySpace: Boolean = false // true = image_6d063a (szigorúbb külső oszlopok), false = image_6d6e7d
 ) {
     private val handFingers: List<Pair<Int, Finger>> = columnConfigs
         .map { it.anchorColIndex to it.finger }
@@ -29,20 +30,29 @@ class ColemakDhEffortGenerator(
         val dx = targetCenter.x - homeX
         val dy = targetCenter.y - homeY
 
-        // 1. Távolság a fizikai gomb (0.3u margójú) aktivációs dobozának legközelebbi pontjáig
-        val actDx = sign(dx) * max(0.0, abs(dx) - activationMargin)
-        val actDy = sign(dy) * max(0.0, abs(dy) - activationMargin)
-
-        // 2. Az elmozdulásvektor felbontása az alkar 10 fokos megközelítési szöge szerint
         val theta = Math.toRadians(angleOfApproachDegrees) * xSign
-        val distX = abs(actDx * cos(theta) + actDy * sin(theta))
-        val distY = abs(-actDx * sin(theta) + actDy * cos(theta))
 
-        // 3. Fitts törvénye szerinti logaritmikus büntetés
+        val distX: Double
+        val distY: Double
+
+        if (boxInKeySpace) {
+            // Aktivációs doboz levonása a fizikai gomb terében (erősebb büntetés a CapsLock és felső sorokra)
+            val actDx = sign(dx) * max(0.0, abs(dx) - activationMargin)
+            val actDy = sign(dy) * max(0.0, abs(dy) - activationMargin)
+            distX = abs(actDx * cos(theta) + actDy * sin(theta))
+            distY = abs(-actDx * sin(theta) + actDy * cos(theta))
+        } else {
+            // Aktivációs doboz levonása a forgatott (alkar) térben
+            val rotX = dx * cos(theta) + dy * sin(theta)
+            val rotY = -dx * sin(theta) + dy * cos(theta)
+            distX = max(0.0, abs(rotX) - activationMargin)
+            distY = max(0.0, abs(rotY) - activationMargin)
+        }
+
+        // Fitts törvénye 2-es alapú logaritmussal
         val fX = log2(1.0 + distancePenaltyPd * distX)
         val fY = log2(1.0 + distancePenaltyPd * distY)
 
-        // 4. Eredő terhelés
         val pf = finger.baseEffort
         return pf + hypot(pf * fY, lateralPenaltyPx * fX)
     }
