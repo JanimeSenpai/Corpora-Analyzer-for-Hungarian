@@ -24,7 +24,7 @@ class ColemakDhEffortGenerator(
     private val columnConfigs: List<ColumnConfig>,
     private val angleOfApproachDegrees: Double = 10.0,
     private val lateralPenaltyPx: Double = 2.0,
-    private val distancePenaltyPd: Double = 1.30,
+    private val distancePenaltyPd: Double = 1.3,
     private val activationMargin: Double = 0.3,
     private val useOptimalFingerAssignment: Boolean = false
 ) {
@@ -43,36 +43,29 @@ class ColemakDhEffortGenerator(
     ): Double {
         val anchorCenter = keyboardHalf.getPhysicalCoordinate(keyboardHalf.homeRowIndex, anchorColIndex)
 
-        // 1. Anatómiai pihenőhelyzet (Home Position) kiszámítása
-        // Bal kéznél +homeOffsetX, jobb kéznél a tükrözés miatt -homeOffsetX.
-        // Mivel a mátrixban +Y lefelé mutat, a felfelé értelmezett homeOffsetY-t kivonjuk.
-        val xSign = if (keyboardHalf.hand == Hand.LEFT) 1.0 else -1.0
+        val xSign = if (keyboardHalf.hand == Hand.LEFT) 1.0 else -1.0 //Előjel
         val homeX = anchorCenter.x + (finger.homeOffsetX * xSign)
         val homeY = anchorCenter.y - finger.homeOffsetY
 
-        // 2. Elmozdulásvektor a pihenőponttól a célgomb középpontjáig
         val dx = targetCenter.x - homeX
         val dy = targetCenter.y - homeY
 
-        // 3. Forgatási transzformáció az alkar megközelítési szöge alapján
-        val theta = Math.toRadians(angleOfApproachDegrees) * xSign
-        val dLateral = dx * cos(theta) + dy * sin(theta)
-        val dMesial = -dx * sin(theta) + dy * cos(theta)
+        // 3. Távolság a gomb (nem elforgatott) aktivációs dobozának legközelebbi pontjáig
+        val actDx = sign(dx) * max(0.0, abs(dx) - activationMargin)
+        val actDy = sign(dy) * max(0.0, abs(dy) - activationMargin)
 
-        // 4. Távolság az aktivációs terület (0.3u margójú doboz) határáig
-        val distX = max(0.0, abs(dLateral) - activationMargin)
-        val distY = max(0.0, abs(dMesial) - activationMargin)
+        // 4. A tényleges mozgásvektor felbontása az alkar 10 fokos megközelítési szöge szerint
+        val theta = Math.toRadians(angleOfApproachDegrees) * xSign  //előjelesen átváltjuk radiánba
+        val distX = abs(actDx * cos(theta) + actDy * sin(theta))
+        val distY = abs(-actDx * sin(theta) + actDy * cos(theta))
 
         // 5. Fitts törvénye szerinti logaritmikus büntetés
         val fX = log2(1.0 + distancePenaltyPd * distX)
         val fY = log2(1.0 + distancePenaltyPd * distY)
 
-        // 6. Eredő terhelés: Pf + sqrt((Pf * Fy)^2 + (Px * Fx)^2)
+        // 6. Eredő terhelés
         val pf = finger.baseEffort
-        val mesialPenalty = pf * fY
-        val lateralPenalty = lateralPenaltyPx * fX
-
-        return pf + hypot(mesialPenalty, lateralPenalty)
+        return pf + hypot(pf * fY, lateralPenaltyPx * fX)
     }
 
     fun calculateEffort(targetRow: Int, targetCol: Int): Double {
