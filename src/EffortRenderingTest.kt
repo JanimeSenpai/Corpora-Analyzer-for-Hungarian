@@ -13,7 +13,7 @@ fun main() {
 fun standardKeyboardTest(){
     // Standard ISO/ANSI sor-eltolások az alapsorhoz (2. index) képest:
 
-    // Num (-0.5u), Top (-0.25u), Home (0.0u), Bottom (+0.5u)
+    // Num (-0.75u), Top (-0.25u), Home (0.0u), Bottom (+0.5u)
     val standardRowOffsets = listOf(-0.75, -0.25, 0.0, 0.5)
     val leftHalf = KeyboardHalf(Hand.LEFT, StaggerType.ROW_STAGGER, 4, 6, standardRowOffsets)
     val leftConfigs = listOf(
@@ -86,7 +86,7 @@ fun testMySymmetricalRowstaggerKeyboard(){
     val rightOpt = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
     EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt, leftConfigs,rightConfigs,"MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
 
-    println("Képek sikeresen legenerálva: standard_traditional_heatmap.png és standard_optimal_heatmap.png")
+    println("Kép sikeresen legenerálva: MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
 
 
 }
