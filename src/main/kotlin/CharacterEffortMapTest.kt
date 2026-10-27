@@ -1,6 +1,7 @@
 import EffortModel.*
 import java.io.File
 
+/*
 fun main() {
     // A parser példányosítása (a hardvert és a betűket is a YAML-ből építi fel)
     val parser = LayoutEffortParser()
@@ -22,4 +23,4 @@ fun main() {
         // 3 tizedesjegyre kerekítve a könnyebb olvashatóságért
         println("$char : ${String.format("%.3f", effort)}")
     }
-}
+}*/
