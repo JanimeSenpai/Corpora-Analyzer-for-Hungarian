@@ -1,7 +1,8 @@
 name: "LTSN Ergo"
+#we have an unnecessary amount of keys defined for this layout
 hardware:
   stagger_type: "columnar_stagger" # "row_stagger" or "columnar_stagger"
-  num_rows: 4
+  num_rows: 5
   home_row_index: 3
   optimal_finger_assignment: true
   angle_of_approach_degrees: 0.0
@@ -14,8 +15,9 @@ hardware:
     fingers: ["I", "I", "I", "M", "R", "P", "P", "P"]
     anchors: [2, 2, 2, 3, 4, 5, 5, 5]
 matrix: |
-  __ _ _ __   __ _ w xq
-  úó u á yí   fz k d h_
-  öi o e aő   bl t s np
-  cü . , éű   vr m g j-
-         -     -
+  ___ _ _ ___   ___ _ _ ___  
+  ___ _ _ ___   ___ _ w xq_
+  _úó u á yí_   _fz k d h__
+  _öi o e aő_   _bl t s np_
+  _cü . , éű_   _vr m g j-_
+          -       -
