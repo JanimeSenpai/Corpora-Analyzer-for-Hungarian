@@ -23,6 +23,7 @@ enum class Finger(
     val homeOffsetX: Double,
     val homeOffsetY: Double
 ) {
+    THUMB(baseEffort = 1.0, homeOffsetX = 0.0, homeOffsetY = 0.0), // <-- A hüvelykujj
     INDEX(baseEffort = 1.0, homeOffsetX = -0.04, homeOffsetY = -0.32),
     MIDDLE(baseEffort = 1.1, homeOffsetX = 0.03, homeOffsetY = 0.16),
     RING(baseEffort = 1.3, homeOffsetX = 0.00, homeOffsetY = 0.08),
