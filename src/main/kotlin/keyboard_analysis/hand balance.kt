@@ -61,7 +61,7 @@ fun handBalanceAnalysis(layoutFile: File, charFreqFile: File, rawLayoutName: Str
             if (parts.size >= 2) {
                 val charStr = parts[0]
                 if (charStr.isNotEmpty()) {
-                    val char = charStr[0]
+                    val char = charStr[0]//todo itt ugyan mi történik a szóköz esetén???
                     val percentageStr = parts[1].replace("%", "").replace(",", ".")
                     val percentage = percentageStr.toDoubleOrNull() ?: 0.0
 

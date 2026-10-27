@@ -89,7 +89,7 @@ fun completeLayoutAnalysis(
 
     if (verbose) println("--------------------------------------------------")
     val rows = layoutData.getRows()
-    val rowPercentages = rowUsageAnalysis(rows, layoutData.homeRowIndex, corpusData, verbose)
+    val rowPercentages = rowUsageAnalysis(rows, layoutData.homeRowIndex, corpusData.letters, verbose, layoutData.name,corpusData.datasetName)
     val homeRowPercentage = if (layoutData.homeRowIndex in rowPercentages.indices) rowPercentages[layoutData.homeRowIndex] else 0.0
 
 
