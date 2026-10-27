@@ -57,6 +57,7 @@ fun letterfrequency(filepath: String) {
     // ha a filepath mondjuk "raw_texts/szoveg.txt" volt.
     val filename = inputFile.name
     val outputFile = File("analysis_results/$filename/letterfrequency.txt")
+    val nospaceoutputFile = File("analysis_results/$filename/nospaceletterfrequency.txt")
 
     // Létrehozzuk a mappaszerkezetet, ha még nem létezik
     outputFile.parentFile?.mkdirs()
@@ -83,6 +84,30 @@ fun letterfrequency(filepath: String) {
             writer.write("$charDisplay\t$formattedPercentage%\t${item.count}")
             writer.newLine()
         }
+
+// 6. Második fájl kiírása (szóköz nélkül, újraszámolt tiszta hosszal)
+        val spaceCount = frequencyMap[' '] ?: 0
+        val totalLengthNoSpace = totalLength - spaceCount
+        val noSpaceFrequencyList = frequencyList.filter { it.character != ' ' }
+
+        nospaceoutputFile.bufferedWriter().use { writer ->
+            for (item in noSpaceFrequencyList) {
+                val charDisplay = when (item.character) {
+                    '\n' -> "\\n"
+                    '\t' -> "\\t"
+                    '\r' -> "\\r"
+                    ' '  -> "[SPACE]"
+                    else -> item.character.toString()
+                }
+
+                // Százalék kiszámítása a szóköz nélküli tiszta hossz alapján
+                val percentage = if (totalLengthNoSpace > 0) (item.count.toDouble() / totalLengthNoSpace) * 100 else 0.0
+                val formattedPercentage = "%.4f".format(percentage)
+                writer.write("$charDisplay\t$formattedPercentage%\t${item.count}")
+                writer.newLine()
+            }
+        }
+
 }
 println("letterfrequency calculation finished.")
 }
