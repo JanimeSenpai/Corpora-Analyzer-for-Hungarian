@@ -87,9 +87,41 @@ fun readcommands(){
 }
 
 fun listcommands(){
-    println("letter frequency\n" +
-            "bigram frequency\n"+
-            "CorpusAnalyzer.preprocess file")
+    println("\"CorpusAnalyzer.preprocess file\"-> preprocess()\n" +
+            "\"pf\"-> preprocess()\n" +
+            "\"letter frequency\"->{\n  launchletterfrequency()\n" +
+            "\"lf\"->launchletterfrequency()\n" +
+            "\"CorpusAnalyzer.buildcorpora\"-> launchbuildcorpora()\n" +
+            "\"bc\" -> launchbuildcorpora()\n" +
+            "\"bigram analysis\" -> launchbigramanalysis()\n" +
+            "\"ba\" -> launchbigramanalysis()\n" +
+            "\"keyboard bigram analysis\" -> launchsimplesfbanalysis()\n" +
+            "\"kba\" -> launchsimplesfbanalysis()\n" +
+            "\"trigram analysis\" -> launchtrigramanalysis()\n" +
+            "\"ta\" -> launchtrigramanalysis()\n" +
+            "\"layout alternation analysis\" -> launchAlternationAnalysis()\n" +
+            "\"laa\" -> launchAlternationAnalysis()\n" +
+            "\"layout 2roll analysis\" -> launchRollAnalysis()\n" +
+            "\"l2ra\" -> launchRollAnalysis()\n" +
+            "\"layout 3roll analysis\" -> launch3RollAnalysis()\n" +
+            "\"l3ra\" -> launch3RollAnalysis()\n" +
+            "\"layout redirect analysis\" ->launchRedirectAnalysis()\n" +
+            "\"lra\"->launchRedirectAnalysis()\n" +
+            "\"complete layout analysis\" -> launchCompleteLayoutAnalysis()\n" +
+            "\"cla\" -> launchCompleteLayoutAnalysis()\n" +
+            "\"complete corpus analysis\" -> launchCompleteCorpusAnalysis()\n" +
+            "\"cca\" -> launchCompleteCorpusAnalysis()\n" +
+            "\"sta\" -> launchSpaceIncludedTrigramAnalysis()\n" +
+            "\"calculate word frequency\"-> launchCalculateWordFrequency()\n" +
+            "\"sfs1\" ->launchSpaceSfs1Analysis()\n" +
+            "\"cwf\"-> launchCalculateWordFrequency()\n" +
+            "\"hb\"-> launchHandBalanceAnalysis()\n" +
+            "\"ru\"->launchRowUsageAnalysis()//row usage\n" +
+            "\"generate csv\" -> launchGenerateSummaryCsv()\n" +
+            "\"gcsv\" -> launchGenerateSummaryCsv()\n" +
+            "\"po\" -> launchPinkyOffAnalysis()\n" +
+            "\"pinky off\" -> launchPinkyOffAnalysis()\n" +
+            "\"exit\"-> exitProcess(0)")
 }
 
 
