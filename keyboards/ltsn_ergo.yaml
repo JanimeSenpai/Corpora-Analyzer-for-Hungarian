@@ -1,0 +1,21 @@
+name: "LTSN Ergo"
+hardware:
+  stagger_type: "columnar_stagger" # "row_stagger" or "columnar_stagger"
+  num_rows: 4
+  home_row_index: 3
+  optimal_finger_assignment: true
+  angle_of_approach_degrees: 0.0
+  left:
+    offsets: [0.50, 0.50, 0.50, 0.25, 0.00, 0.25, 0.38, 0.10]
+    fingers: ["P", "P", "P", "R", "M", "I", "I", "I"]
+    anchors: [2, 2, 2, 3, 4, 5, 5, 5] #anchor is the home column of the finger that presses keys in this column
+  right:
+    offsets: [0.10, 0.38, 0.25, 0.00, 0.25, 0.50, 0.50, 0.50]
+    fingers: ["I", "I", "I", "M", "R", "P", "P", "P"]
+    anchors: [2, 2, 2, 3, 4, 5, 5, 5]
+matrix: |
+  __ _ _ __   __ _ w xq
+  úó u á yí   fz k d h_
+  öi o e aő   bl t s np
+  cü . , éű   vr m g j-
+         -     -

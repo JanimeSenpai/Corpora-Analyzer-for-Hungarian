@@ -7,6 +7,8 @@ import EffortModel.Hand
 import EffortModel.KeyboardHalf
 import EffortModel.StaggerType
 
+//The purpose of these functions is to test the Effort layout generation and rendering of effort heatmaps.
+//physical hardware is stored along the layouts so in general use these functions are not going to be used
 fun main() {
     testMyCustomColStaggerKeyboard()
 }

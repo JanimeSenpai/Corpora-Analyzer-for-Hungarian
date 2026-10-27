@@ -1,0 +1,52 @@
+### Gradle ###
+.gradle
+build/
+local.properties
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Kotlin ###
+.kotlin
+
+### Projekt specifikus (Hatalmas korpuszok és generált eredmények) ###
+raw_texts/
+processable_texts/
+analysis_results/
+# Megjegyzés: A YAML/TXT billentyűzet kiosztásokat (pl. keyboards/ mappa) NEM zárjuk ki, 
+# hiszen a hardveres/logikai profilok a forráskód részét képezik.
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS / Windows ###
+.DS_Store
+Thumbs.db
