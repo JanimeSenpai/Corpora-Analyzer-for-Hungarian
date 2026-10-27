@@ -16,7 +16,7 @@ fun launchPinkyOffAnalysis() {
     var datasetName = readln().trim()
     if (!datasetName.endsWith(".txt")) datasetName += ".txt"
 
-    val charFreqFile = File("analysis_results/$datasetName/letterfrequency.txt")
+    val charFreqFile = File("analysis_results/$datasetName/CorpusAnalyzer.letterfrequency.txt")
     if (!charFreqFile.exists()) {
         println("Hiba: A karaktergyakorisági fájl nem található ($charFreqFile).")
         return

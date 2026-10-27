@@ -1,3 +1,5 @@
+package CorpusAnalyzer
+
 import java.io.File
 
 //kezdésnek írjunk egy programot, ami egy fájlra működik
@@ -10,7 +12,7 @@ import java.io.File
 //a két lista elemeiből készítsünk ilyen példányokat
 //a példányokat rakjuk be egy listába
 //a listát rendezzük példányszám szerint
-//a listát írjuk ki egy fájlba, aminek az elérési útja: analysys_results/filepath/letterfrequency.txt
+//a listát írjuk ki egy fájlba, aminek az elérési útja: analysys_results/filepath/CorpusAnalyzer.letterfrequency.txt
 //A lista legyen táblázatos alakú
 //első elem: karakter, után tabulátor, utána a karakter gyakorisága százalékban, amit úgy számítunk ki, hogy az előfordulást elosztjuk a teljes szöveg hosszával és szorzunk százzal, aztán tabulátor aztán előfordulás szám
 
@@ -48,7 +50,7 @@ fun letterfrequency(filepath: String) {
     }
 
     // 3. Példányosítás és listába rendezés
-    // A szótár elemeiből CharFrequency objektumokat csinálunk, majd csökkenő sorrendbe rakjuk
+    // A szótár elemeiből CorpusAnalyzer.CharFrequency objektumokat csinálunk, majd csökkenő sorrendbe rakjuk
     val frequencyList = frequencyMap.map { CharFrequency(it.key, it.value) }
         .sortedByDescending { it.count }
 
@@ -56,7 +58,7 @@ fun letterfrequency(filepath: String) {
     // A fájlnév kinyerése (pl. "szoveg.txt"), hogy a mappa útvonala ne törjön el,
     // ha a filepath mondjuk "raw_texts/szoveg.txt" volt.
     val filename = inputFile.name
-    val outputFile = File("analysis_results/$filename/letterfrequency.txt")
+    val outputFile = File("analysis_results/$filename/CorpusAnalyzer.letterfrequency.txt")
     val nospaceoutputFile = File("analysis_results/$filename/nospaceletterfrequency.txt")
 
     // Létrehozzuk a mappaszerkezetet, ha még nem létezik
@@ -109,5 +111,5 @@ fun letterfrequency(filepath: String) {
         }
 
 }
-println("letterfrequency calculation finished.")
+println("CorpusAnalyzer.letterfrequency calculation finished.")
 }

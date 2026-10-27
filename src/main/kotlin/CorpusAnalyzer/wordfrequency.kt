@@ -1,3 +1,5 @@
+package CorpusAnalyzer
+
 import java.io.File
 
 fun launchCalculateWordFrequency() {

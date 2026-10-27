@@ -1,4 +1,4 @@
-
+package CorpusAnalyzer
 import java.io.File
 
 //olvassuk be az összefűzendő fájlok nevét
@@ -9,7 +9,7 @@ import java.io.File
 
 //olvassuk be a fájl nevét
 
-//a buildcorpora függvény fűzze össze soronként a megadott fájlokat és adja ki egy új textfájl formájában az eredményt, ami legyen a processable_texts mappában
+//a CorpusAnalyzer.buildcorpora függvény fűzze össze soronként a megadott fájlokat és adja ki egy új textfájl formájában az eredményt, ami legyen a processable_texts mappában
 
 
 fun launchbuildcorpora() {

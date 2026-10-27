@@ -1,7 +1,5 @@
 package keyboard_analysis
 
-import CombinedLayoutData
-import LayoutParser
 import java.io.File
 
 data class LayoutAnalysisResult(

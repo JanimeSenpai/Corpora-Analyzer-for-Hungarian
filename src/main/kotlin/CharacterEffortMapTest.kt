@@ -2,7 +2,7 @@ import EffortModel.*
 import java.io.File
 
 /*
-fun main() {
+fun CorpusAnalyzer.main() {
     // A parser példányosítása (a hardvert és a betűket is a YAML-ből építi fel)
     val parser = LayoutEffortParser()
 

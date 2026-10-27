@@ -1,3 +1,7 @@
+package CorpusAnalyzer
+
+import currentLocale
+
 fun String.englishpunctuationreplace() : String {
     return this.replace("?","/").replace(":",";")
 }

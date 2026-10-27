@@ -1,3 +1,5 @@
+package keyboard_analysis
+
 import EffortModel.*
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper

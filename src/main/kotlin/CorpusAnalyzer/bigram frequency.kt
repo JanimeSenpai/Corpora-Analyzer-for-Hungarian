@@ -1,4 +1,4 @@
-//paraméterben kapott txt fájlon végezzük el a bigramelemzést
+package CorpusAnalyzer//paraméterben kapott txt fájlon végezzük el a bigramelemzést
 //hasonló a betűgyakoriság elemzéshez
 //nyissuk meg a fájlt
 //szavanként menjünk végig a fájlon, és dobjuk el azokat a szavakat, amik nem valid karaktert tartalmaznak
@@ -32,6 +32,7 @@ sfb_ratio := divide by the total bigrams count
 * */
 
 import java.io.File
+import kotlin.text.iterator
 
 // Data class a bigramok tárolásához
 data class BigramFrequency(val bigram: String, val count: Int)

@@ -17,7 +17,7 @@ class CorpusData(
             val baseDir = File("analysis_results/$cleanName")
 
             // 1. Karaktergyakoriság beolvasása (Total az első sorban itt is)
-            val spaceincludedlettersFile = File(baseDir, "letterfrequency.txt")
+            val spaceincludedlettersFile = File(baseDir, "CorpusAnalyzer.letterfrequency.txt")
             val loadedspaceincludedletters = mutableMapOf<String, Double>()
             if (!spaceincludedlettersFile.exists()) {
                 println("Hiba: A betűgyakorisági fájl nem található ($spaceincludedlettersFile).")

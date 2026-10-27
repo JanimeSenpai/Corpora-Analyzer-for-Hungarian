@@ -1,3 +1,12 @@
+import CorpusAnalyzer.Locale
+import CorpusAnalyzer.launchCalculateWordFrequency
+import CorpusAnalyzer.launchCompleteCorpusAnalysis
+import CorpusAnalyzer.launchSpaceIncludedTrigramAnalysis
+import CorpusAnalyzer.launchbigramanalysis
+import CorpusAnalyzer.launchbuildcorpora
+import CorpusAnalyzer.launchtrigramanalysis
+import CorpusAnalyzer.letterfrequency
+import CorpusAnalyzer.preprocess
 import keyboard_analysis.launch3RollAnalysis
 import keyboard_analysis.launchAlternationAnalysis
 import keyboard_analysis.launchCompleteLayoutAnalysis
@@ -32,13 +41,13 @@ fun readcommands(){
     }else{
         when(command){
             "commands" -> listcommands()
-            "preprocess file"->preprocess()
-            "pf"->preprocess()
+            "CorpusAnalyzer.preprocess file"-> preprocess()
+            "pf"-> preprocess()
             "letter frequency"->{
                launchletterfrequency()
             }
             "lf"->launchletterfrequency()
-            "buildcorpora"->launchbuildcorpora()
+            "CorpusAnalyzer.buildcorpora"-> launchbuildcorpora()
             "bc" -> launchbuildcorpora()
             "bigram analysis" -> launchbigramanalysis()
             "ba" -> launchbigramanalysis()
@@ -58,8 +67,8 @@ fun readcommands(){
             "cla" -> launchCompleteLayoutAnalysis()
             "complete corpus analysis" -> launchCompleteCorpusAnalysis()
             "cca" -> launchCompleteCorpusAnalysis()
-            "sta" ->launchSpaceIncludedTrigramAnalysis()
-            "calculate word frequency"->launchCalculateWordFrequency()
+            "sta" -> launchSpaceIncludedTrigramAnalysis()
+            "calculate word frequency"-> launchCalculateWordFrequency()
             "sfs1" ->launchSpaceSfs1Analysis()
             "cwf"-> launchCalculateWordFrequency()
             "hb"-> launchHandBalanceAnalysis()
@@ -80,7 +89,7 @@ fun readcommands(){
 fun listcommands(){
     println("letter frequency\n" +
             "bigram frequency\n"+
-            "preprocess file")
+            "CorpusAnalyzer.preprocess file")
 }
 
 

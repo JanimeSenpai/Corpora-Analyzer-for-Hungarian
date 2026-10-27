@@ -1,4 +1,7 @@
+package CorpusAnalyzer
+
 import java.io.File
+import kotlin.text.iterator
 
 // Data class a trigramok tárolásához
 data class SpaceIncludedTrigramFrequency(val trigram: String, val count: Int)

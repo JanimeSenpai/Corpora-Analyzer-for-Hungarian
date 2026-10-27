@@ -18,7 +18,7 @@ fun launchHandBalanceAnalysis() {
     if (!datasetName.endsWith(".txt")) datasetName += ".txt"
 
     // Ehhez az elemzéshez a szimpla karaktergyakoriság kell
-    val charFreqFile = File("analysis_results/$datasetName/letterfrequency.txt")
+    val charFreqFile = File("analysis_results/$datasetName/CorpusAnalyzer.letterfrequency.txt")
     if (!charFreqFile.exists()) {
         println("Hiba: A karaktergyakorisági fájl nem található ($charFreqFile).")
         return
