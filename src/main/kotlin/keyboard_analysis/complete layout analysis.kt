@@ -88,7 +88,14 @@ fun completeLayoutAnalysis(
 
 
     if (verbose) println("--------------------------------------------------")
-    val (handBalanceLeft, handBalanceRight) = handBalanceAnalysis(layoutData.leftChars,layoutData.rightChars,  verbose, layoutData.name,corpusData.datasetName)
+    val (handBalanceLeft, handBalanceRight) = handBalanceAnalysis(
+        leftChars = layoutData.leftChars,
+        rightChars = layoutData.rightChars,
+        letters = corpusData.letters, // <-- Ezt be kell kötni
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     if (verbose) println("--------------------------------------------------")
     val fingerSets = layoutData.getFingerCharacterSets()
@@ -96,15 +103,50 @@ fun completeLayoutAnalysis(
     val leftPinkyChars = fingerSets["L_P"] ?: emptySet()
     val rightPinkyChars = fingerSets["R_P"] ?: emptySet()
 
+    // 1. Dinamikus alapgomb (Anchor) keresés a HardwareYaml alapján
+    var leftPinkyHomeChar: Char? = null
+    // Megkeressük, melyik oszlop(ok)hoz van rendelve a bal kisujj ('P')
+    val leftPinkyColIndex = layoutData.hardwareYaml.left.fingers.indexOfFirst { it.uppercase() == "P" }
+    if (leftPinkyColIndex != -1) {
+        // Kikeressük ennek a kisujjoszlopnak az anchor (horgony) oszlopát
+        val leftPinkyAnchorCol = layoutData.hardwareYaml.left.anchors[leftPinkyColIndex]
+
+        // A karakter az [X = homeRowIndex, Y = anchorCol] koordinátán lesz a bal mátrixban
+        if (layoutData.homeRowIndex in layoutData.leftChars.indices && leftPinkyAnchorCol in layoutData.leftChars[layoutData.homeRowIndex].indices) {
+            val charAtAnchor = layoutData.leftChars[layoutData.homeRowIndex][leftPinkyAnchorCol]
+            if (charAtAnchor != '_' && !charAtAnchor.isWhitespace()) {
+                leftPinkyHomeChar = charAtAnchor.lowercaseChar()
+            }
+        }
+    }
+
+    var rightPinkyHomeChar: Char? = null
+    // Megkeressük, melyik oszlop(ok)hoz van rendelve a jobb kisujj ('P')
+    val rightPinkyColIndex = layoutData.hardwareYaml.right.fingers.indexOfFirst { it.uppercase() == "P" }
+    if (rightPinkyColIndex != -1) {
+        // Kikeressük ennek a kisujjoszlopnak az anchor (horgony) oszlopát
+        val rightPinkyAnchorCol = layoutData.hardwareYaml.right.anchors[rightPinkyColIndex]
+
+        // A karakter az [X = homeRowIndex, Y = anchorCol] koordinátán lesz a jobb mátrixban
+        if (layoutData.homeRowIndex in layoutData.rightChars.indices && rightPinkyAnchorCol in layoutData.rightChars[layoutData.homeRowIndex].indices) {
+            val charAtAnchor = layoutData.rightChars[layoutData.homeRowIndex][rightPinkyAnchorCol]
+            if (charAtAnchor != '_' && !charAtAnchor.isWhitespace()) {
+                rightPinkyHomeChar = charAtAnchor.lowercaseChar()
+            }
+        }
+    }
+
+    // A magfüggvény hívása (ez teljesen változatlan!)
     val pinkyOffPercentage = pinkyOffAnalysis(
         leftPinkyChars = leftPinkyChars,
         rightPinkyChars = rightPinkyChars,
-        corpusData = corpusData,
+        leftPinkyHomeChar = leftPinkyHomeChar,
+        rightPinkyHomeChar = rightPinkyHomeChar,
+        letters = corpusData.letters, // A szóköz nélküli arányok
         verbose = verbose,
         layoutName = layoutData.name,
         datasetName = corpusData.datasetName
     )
-
     if (verbose) println("--------------------------------------------------")
 
     // 10 ujjra kiterjesztett Karakter -> Ujj térkép

@@ -16,8 +16,8 @@ import keyboard_analysis.launchPinkyOffAnalysis
 import keyboard_analysis.launchRedirectAnalysis
 import keyboard_analysis.launchRollAnalysis
 import keyboard_analysis.launchRowUsageAnalysis
+import keyboard_analysis.launchSimpleSfbAnalysis
 import keyboard_analysis.launchSpaceSfs1Analysis
-import keyboard_analysis.launchsimplesfbanalysis
 import kotlin.system.exitProcess
 
 fun main() {
@@ -51,8 +51,8 @@ fun readcommands(){
             "bc" -> launchbuildcorpora()
             "bigram analysis" -> launchbigramanalysis()
             "ba" -> launchbigramanalysis()
-            "keyboard bigram analysis" -> launchsimplesfbanalysis()
-            "kba" -> launchsimplesfbanalysis()
+            "keyboard bigram analysis" -> launchSimpleSfbAnalysis()
+            "kba" -> launchSimpleSfbAnalysis()
             "trigram analysis" -> launchtrigramanalysis()
             "ta" -> launchtrigramanalysis()
             "layout alternation analysis" -> launchAlternationAnalysis()
