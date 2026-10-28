@@ -14,6 +14,7 @@ data class LayoutAnalysisResult(
     val sfbPercentage: Double,
     val alternationPercentage: Double,
     val rollPercentage: Double, // 2-1 és 1-2 együtt
+    val threerollPercentage: Double,
     val redirectPercentage: Double,
     val spaceSfs1Penalty: Double
 )
@@ -143,11 +144,36 @@ fun completeLayoutAnalysis(
     )
 
     if (verbose) println("--------------------------------------------------")
-    val rollPercentage = rollAnalysis(layoutData, corpusData, verbose)
+
+    // 1. Kéz- és ujj-hozzárendelés feltérképezése a Roll elemzéshez
+    // A szótár értéke egy Pair lesz: (Kéz indexe, Ujj indexe)
+    val charToHandAndFingerMap = mutableMapOf<Char, Pair<Int, Int>>()
+    val fingerSetsForRoll = layoutData.getFingerCharacterSets()
+    val fingerKeysForRoll = listOf("L_P", "L_R", "L_M", "L_I", "L_T", "R_T", "R_I", "R_M", "R_R", "R_P")
+
+    for ((index, key) in fingerKeysForRoll.withIndex()) {
+        val hand = if (key.startsWith("L")) 0 else 1 // 0 = Bal, 1 = Jobb
+        fingerSetsForRoll[key]?.forEach { char ->
+            charToHandAndFingerMap[char] = Pair(hand, index)
+        }
+    }
+
+    val rollPercentage = rollAnalysis(
+        charMap = charToHandAndFingerMap,
+        trigrams = corpusData.trigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     // A 3-roll elemzést is lefuttathatjuk, de egyelőre nem rakjuk be a kötelező eredmény objektumba
-    if (verbose) println("--------------------------------------------------")
-    threeRollAnalysis(layoutData, corpusData, verbose)
+    val threeRollPercentage = threeRollAnalysis(
+        charMap = charToHandAndFingerMap,
+        trigrams = corpusData.trigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     if (verbose) println("--------------------------------------------------")
     val redirectPercentage = redirectAnalysis(layoutData, corpusData, verbose)
@@ -170,6 +196,7 @@ fun completeLayoutAnalysis(
         sfbPercentage = sfbPercentage,
         alternationPercentage = alternationPercentage,
         rollPercentage = rollPercentage,
+        threerollPercentage = threeRollPercentage ,
         redirectPercentage = redirectPercentage,
         spaceSfs1Penalty = spaceSfs1Penalty
     )
