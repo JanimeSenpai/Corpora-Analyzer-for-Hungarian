@@ -32,12 +32,13 @@ package keyboard_analysis
 * */
 import java.io.File
 
-fun launchsimplesfbanalysis() {
-    println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards_simple mappából):")
+// 1. KONZOLOS INDÍTÓ FÜGGVÉNY (Egyszeri futás, betölti a fájlokat memóriába)
+fun launchSimpleSfbAnalysis() {
+    println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards mappából):")
     var layoutName = readln().trim()
-    if (!layoutName.endsWith(".txt")) layoutName += ".txt"
+    if (!layoutName.endsWith(".yaml")) layoutName += ".yaml"
 
-    val layoutFile = File("keyboards_simple/$layoutName")
+    val layoutFile = File("keyboards/$layoutName")
     if (!layoutFile.exists()) {
         println("Hiba: A billentyűzet fájl nem található ($layoutFile).")
         return
@@ -45,58 +46,58 @@ fun launchsimplesfbanalysis() {
 
     println("Kérem az adathalmaz nevét (pl. aminek a mappája az analysis_results-ban van):")
     var datasetName = readln().trim()
-    if (!datasetName.endsWith(".txt")) datasetName += ".txt"
 
-    // A korábbi kódjaink az analysis_results mappát használták
-    val bigramFile = File("analysis_results/$datasetName/bigramfrequency.txt")
-    if (!bigramFile.exists()) {
-        println("Hiba: A bigram gyakorisági fájl nem található ($bigramFile).")
+    // Új architektúra: a teljes parseren és memóriastruktúrán keresztül futtatjuk
+    val layoutData = try {
+        LayoutParser.parseLayout(layoutFile)
+    } catch (e: Exception) {
+        println("Hiba a billentyűzet beolvasásakor: ${e.message}")
         return
     }
 
-    simplesfbanalysis(layoutFile, bigramFile, layoutName.removeSuffix(".txt"))
-}
-
-fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String) {
-    println("Billentyűzet elemzése folyamatban (SFB és SKS szétválasztásával)...")
-
-    // 1. Billentyűzet betűinek feltérképezése (Karakter -> Ujj indexe 0-7)
-    val charToFinger = mutableMapOf<Char, Int>()
-    layoutFile.useLines { lines ->
-        lines.forEachIndexed { fingerIndex, line ->
-            if (fingerIndex < 8) {
-                for (char in line.lowercase().filter { !it.isWhitespace()&&it!='_' }) {
-                    charToFinger[char] = fingerIndex
-                }
-            }
-        }
+    val corpusData = CorpusData.loadFromDataset(datasetName)
+    if (corpusData.bigrams.isEmpty()) {
+        println("Hiba: A bigram gyakorisági adatok nem töltődtek be.")
+        return
     }
 
-    // Külön tömbök és számlálók az SFB (külön gomb) és SKS (azonos gomb) tárolására
-    val fingerSfbs = DoubleArray(8) { 0.0 }
-    val fingerSks = DoubleArray(8) { 0.0 }
+    // Előállítjuk a paramétereket az elemzőhöz
+    val charToFingerMap = mutableMapOf<Char, Int>()
+    val fingerSets = layoutData.getFingerCharacterSets()
+    val fingerKeys = listOf("L_P", "L_R", "L_M", "L_I", "L_T", "R_T", "R_I", "R_M", "R_R", "R_P")
+    for ((index, key) in fingerKeys.withIndex()) {
+        fingerSets[key]?.forEach { char -> charToFingerMap[char] = index }
+    }
+
+    // Futtatjuk az elemzést (a launch verbose módja mindig true)
+    simpleSfbAnalysis(
+        charToFinger = charToFingerMap,
+        bigrams = corpusData.bigrams,
+        verbose = true,
+        layoutName = layoutData.name,
+        datasetName = datasetName
+    )
+}
+
+fun simpleSfbAnalysis(
+    charToFinger: Map<Char, Int>,
+    bigrams: Map<String, Double>,
+    verbose: Boolean,
+    layoutName: String,
+    datasetName: String
+): Double {
+    if (verbose) println("Billentyűzet elemzése folyamatban (SFB és SKS szétválasztásával 10 ujjra)...")
+
+    // Immár 10-es méretű tömbök a hüvelykujjak miatt
+    val fingerSfbs = DoubleArray(10) { 0.0 }
+    val fingerSks = DoubleArray(10) { 0.0 }
     var totalSfb = 0.0
     var totalSks = 0.0
 
-    // 2. Bigram fájl feldolgozása
-    bigramFile.useLines { lines ->
-        var isFirstLine = true
-
-        lines.forEach { line ->
-            if (isFirstLine) {
-                isFirstLine = false
-                return@forEach
-            }
-
-            val parts = line.split('\t')
-            if (parts.size >= 2) {
-                val bigram = parts[0]
-                val percentageStr = parts[1].replace("%", "").replace(",", ".")
-                val percentage = percentageStr.toDoubleOrNull() ?: 0.0
-
-                if (bigram.length == 2) {
-                    val finger1 = charToFinger[bigram[0]]
-                    val finger2 = charToFinger[bigram[1]]
+    for ((bigram, percentage) in bigrams) {
+        if (bigram.length == 2) {
+            val finger1 = charToFinger[bigram[0]]
+            val finger2 = charToFinger[bigram[1]]
 
                     // Ha mindkét betű rajta van a billentyűzeten, ÉS ugyanaz az ujj nyomja őket
                     if (finger1 != null && finger1 == finger2) {
@@ -114,20 +115,18 @@ fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String)
                     }
                 }
             }
-        }
-    }
 
-    // 3. Eredmények kiírása
-    val datasetName = bigramFile.parentFile.name
-    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
-    resultDir.mkdirs()
 
-    val outputFile = File(resultDir, "sfb_analyzed.txt")
+    if (verbose) {
+        val resultDir = File("analysis_results/$datasetName/$layoutName")
+        resultDir.mkdirs()
+        val outputFile = File(resultDir, "sfb_analyzed.txt")
 
-    val fingerNames = listOf(
-        "Left Pinky", "Left Ring", "Left Middle", "Left Index",
-        "Right Index", "Right Middle", "Right Ring", "Right Pinky"
-    )
+        // Kiegészítve a hüvelykujjak neveivel
+        val fingerNames = listOf(
+            "Left Pinky", "Left Ring", "Left Middle", "Left Index", "Left Thumb",
+            "Right Thumb", "Right Index", "Right Middle", "Right Ring", "Right Pinky"
+        )
 
     outputFile.bufferedWriter().use { writer ->
         // Összesített eredmények a fájl tetején
@@ -138,23 +137,27 @@ fun simplesfbanalysis(layoutFile: File, bigramFile: File, rawLayoutName: String)
         writer.newLine()
 
         // Valódi SFB ujjankénti lebontás
-        writer.write("--- UJJANKÉNTI SFB ---")
-        writer.newLine()
-        for (i in 0 until 8) {
-            writer.write("${fingerNames[i]}: %.4f%%".format(fingerSfbs[i]))
+            writer.write("--- UJJANKÉNTI SFB ---")
             writer.newLine()
-        }
+            for (i in 0 until 10) {
+                writer.write("${fingerNames[i]}: %.4f%%".format(fingerSfbs[i]))
+                writer.newLine()
+            }
 
-        writer.newLine()
+            writer.newLine()
 
         // SKS ujjankénti lebontás (Informatív, hogy lásd, melyik ujjat terhelik a duplázások)
         writer.write("--- UJJANKÉNTI SKB (same key bigram) ---")
-        writer.newLine()
-        for (i in 0 until 8) {
-            writer.write("${fingerNames[i]}: %.4f%%".format(fingerSks[i]))
             writer.newLine()
+            for (i in 0 until 10) {
+                writer.write("${fingerNames[i]}: %.4f%%".format(fingerSks[i]))
+                writer.newLine()
+            }
         }
+
+        saveRawMetric(datasetName, layoutName, "sfb_total", totalSfb)
+        println("Sikeresen végrehajtva: ${outputFile.path} létrehozva.")
     }
-    saveRawMetric(datasetName, rawLayoutName, "sfb_total", totalSfb)
-    println("Sikeresen végrehajtva: ${outputFile.path} létrehozva.")
+
+    return totalSfb
 }
