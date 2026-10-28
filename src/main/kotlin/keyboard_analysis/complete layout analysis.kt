@@ -47,11 +47,6 @@ fun launchCompleteLayoutAnalysis() {
 
     val corpusData = CorpusData.loadFromDataset(datasetName)
 
-    if (corpusData.totalLetters == 0L) {
-        println("Hiba: A korpusz adatok nem töltődtek be megfelelően.")
-        return
-    }
-
     println("\n==================================================")
     println("ELEMZÉS INDÍTÁSA: ${layoutData.name} (Adathalmaz: $datasetName)")
     println("==================================================")
@@ -92,16 +87,60 @@ fun completeLayoutAnalysis(
 
 
     if (verbose) println("--------------------------------------------------")
-    val (handBalanceLeft, handBalanceRight) = handBalanceAnalysis(layoutData, corpusData, verbose)
+    val (handBalanceLeft, handBalanceRight) = handBalanceAnalysis(layoutData.leftChars,layoutData.rightChars,  verbose, layoutData.name,corpusData.datasetName)
 
     if (verbose) println("--------------------------------------------------")
-    val pinkyOffPercentage = pinkyOffAnalysis(layoutData, corpusData, verbose)
+    val fingerSets = layoutData.getFingerCharacterSets()
+
+    val leftPinkyChars = fingerSets["L_P"] ?: emptySet()
+    val rightPinkyChars = fingerSets["R_P"] ?: emptySet()
+
+    val pinkyOffPercentage = pinkyOffAnalysis(
+        leftPinkyChars = leftPinkyChars,
+        rightPinkyChars = rightPinkyChars,
+        corpusData = corpusData,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     if (verbose) println("--------------------------------------------------")
-    val sfbPercentage = simpleSfbAnalysis(layoutData, corpusData, verbose)
+
+    // 10 ujjra kiterjesztett Karakter -> Ujj térkép
+    val charToFingerMap = mutableMapOf<Char, Int>()
+    // Kiegészítve L_T és R_T értékekkel középen
+    val fingerKeys = listOf("L_P", "L_R", "L_M", "L_I", "L_T", "R_T", "R_I", "R_M", "R_R", "R_P")
+
+    for ((index, key) in fingerKeys.withIndex()) {
+        fingerSets[key]?.forEach { char -> charToFingerMap[char] = index }
+    }
+
+    val sfbPercentage = simpleSfbAnalysis(
+        charToFinger = charToFingerMap,
+        bigrams = corpusData.bigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     if (verbose) println("--------------------------------------------------")
-    val alternationPercentage = alternationAnalysis(layoutData, corpusData, verbose)
+
+    // 1. Kéz-hozzárendelés feltérképezése (Karakter -> Kéz: 0 = Bal, 1 = Jobb)
+    // Ez automatikusan támogatja a hüvelykujjakat (Thumb clusterek) is!
+    val charToHandMap = mutableMapOf<Char, Int>()
+    val fingerSetsForAlt = layoutData.getFingerCharacterSets()//ez nem felesleges?
+    for ((key, chars) in fingerSetsForAlt) {
+        val hand = if (key.startsWith("L")) 0 else 1
+        chars.forEach { char -> charToHandMap[char] = hand }
+    }
+
+    val alternationPercentage = alternationAnalysis(
+        charToHand = charToHandMap,
+        trigrams = corpusData.trigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     if (verbose) println("--------------------------------------------------")
     val rollPercentage = rollAnalysis(layoutData, corpusData, verbose)
