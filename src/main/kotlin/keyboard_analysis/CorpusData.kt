@@ -22,14 +22,10 @@ class CorpusData(
             if (!spaceincludedlettersFile.exists()) {
                 println("Hiba: A betűgyakorisági fájl nem található ($spaceincludedlettersFile).")
             } else {
-                spaceincludedlettersFile.useLines { lines ->
-                    var isFirstLine = true
+                spaceincludedlettersFile.useLines(Charsets.UTF_8) { lines ->
 
                     lines.forEach { line ->
-                        if (isFirstLine) {
-                            isFirstLine = false
-                            return@forEach
-                        }
+
 
                         val parts = line.split('\t')
                         if (parts.size >= 2) {
@@ -47,14 +43,9 @@ class CorpusData(
             if (!lettersFile.exists()) {
                 println("Hiba: A betűgyakorisági fájl nem található ($lettersFile).")
             } else {
-                lettersFile.useLines { lines ->
-                    var isFirstLine = true
+                lettersFile.useLines(Charsets.UTF_8) { lines ->
 
                     lines.forEach { line ->
-                        if (isFirstLine) {
-                            isFirstLine = false
-                            return@forEach
-                        }
 
                         val parts = line.split('\t')
                         if (parts.size >= 2) {
@@ -76,7 +67,7 @@ class CorpusData(
             if (!bigramFile.exists()) {
                 println("Hiba: A bigram gyakorisági fájl nem található ($bigramFile).")
             } else {
-                bigramFile.useLines { lines ->
+                bigramFile.useLines(Charsets.UTF_8) { lines ->
                     var isFirstLine = true
 
                     lines.forEach { line ->
@@ -105,7 +96,7 @@ class CorpusData(
             if (!trigramFile.exists()) {
                 println("Hiba: A trigram gyakorisági fájl nem található ($trigramFile).")
             }else{
-                trigramFile.useLines { lines ->
+                trigramFile.useLines(Charsets.UTF_8) { lines ->
                     var isFirstLine = true
                     lines.forEach { line ->
                         if (isFirstLine) {
@@ -134,7 +125,7 @@ class CorpusData(
             if (!spaceIncludedTrigramFile.exists()) {
                 println("Hiba: A spaceIncludedTrigramFile gyakorisági fájl nem található ($spaceIncludedTrigramFile).")
             }else{
-                spaceIncludedTrigramFile.useLines { lines ->
+                spaceIncludedTrigramFile.useLines(Charsets.UTF_8) { lines ->
                     var isFirstLine = true
                     lines.forEach { line ->
                         if (isFirstLine) {

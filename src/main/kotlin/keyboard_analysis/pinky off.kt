@@ -71,7 +71,7 @@ fun launchPinkyOffAnalysis() {
         rightPinkyChars = rightPinkyChars,
         leftPinkyHomeChar = leftPinkyHomeChar,
         rightPinkyHomeChar = rightPinkyHomeChar,
-        letters = corpusData.letters, // Itt már a szóköz nélküli arányok jönnek be
+        letters = corpusData.spaceincludedletters, // eredetileg így mértük, egyelőre marad
         verbose = true,
         layoutName = layoutData.name,
         datasetName = corpusData.datasetName

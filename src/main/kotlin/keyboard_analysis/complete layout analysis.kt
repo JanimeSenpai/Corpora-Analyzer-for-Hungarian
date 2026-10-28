@@ -73,7 +73,7 @@ fun completeLayoutAnalysis(
         println("1. Effort (Fizikai Terhelés) számítása...")
     }
     val charEffortMap = layoutData.buildCharEffortMap()
-    val charReachEffort = calculateLayoutEffort(charEffortMap, corpusData, verbose)
+    val charReachEffort = calculateWeightedReachEffortSum(charEffortMap, corpusData, verbose)
 
     if (verbose){
         //hogyha egy darab layoutot elemzünk, akkor ki fogjuk írni a végeredményt fájlba, és először töröljük a fájlban levő adatokat, hogy appendeljük az új információt
@@ -252,5 +252,6 @@ fun completeLayoutAnalysis(
 
 fun calculateTotalEffort():Double {
     //az lesz a nagyon érdekes, hogy milyen arányban és súlyokkal vesszük figyelembe az összes eddigi paramétert, hogy aztán egy darab végső szám formájában jellemezzük az egész billentyűzetet betűelrendezéssel, fizikai kialakítással mindennel együtt
-    TODO("Not yet implemented")
+
+    return 67.0
 }

@@ -165,17 +165,18 @@ object LayoutParser {
         val leftChars = Array(hw.numRows) { CharArray(leftCols) { '_' } }
         val rightChars = Array(hw.numRows) { CharArray(rightCols) { '_' } }
 
-        // Javítva: String felbontása sorokra a beolvasáshoz
+        // --- ÚJ, JAVÍTOTT BEOLVASÁS ---
         val matrixLines = config.matrix.trim().lines().filter { it.isNotBlank() }
 
         for (r in 0 until minOf(hw.numRows, matrixLines.size)) {
-            val tokens = matrixLines[r].trim().split(Regex("\\s+"))
+            // Eltávolítjuk az összes szóközt a sorból (pl. "___ _ _ ___   ___ _ w xq_" -> "________wxq_")
+            val cleanLine = matrixLines[r].replace(Regex("\\s+"), "")
 
-            // A bal kéz pontosan annyi karaktert vesz ki, ahány fizikai oszlopa van
-            val leftString = tokens.take(leftCols).joinToString("")
+            // A bal kéz levágja az elejéről a saját karaktereit (pontosan annyit, ahány oszlopa van)
+            val leftString = cleanLine.take(leftCols)
 
-            // A jobb kéz a bal oldaliak levágása után kapja meg a saját adagját
-            val rightString = tokens.drop(leftCols).take(rightCols).joinToString("")
+            // A jobb kéz megkapja a maradékot
+            val rightString = cleanLine.drop(leftCols).take(rightCols)
 
             for (c in 0 until minOf(leftCols, leftString.length)) leftChars[r][c] = leftString[c]
             for (c in 0 until minOf(rightCols, rightString.length)) rightChars[r][c] = rightString[c]
