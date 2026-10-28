@@ -36,6 +36,7 @@ fun launchRowUsageAnalysis() {
         rows = rows,
         homeRowIndex = layoutData.homeRowIndex,
         letters = corpusData.letters, // Itt már a százalékos Map<String, Double> megy át
+        spaceincludedletters = corpusData.spaceincludedletters,
         verbose = true,
         layoutName = layoutData.name,
         datasetName = corpusData.datasetName
@@ -46,6 +47,7 @@ fun rowUsageAnalysis(
     rows: List<CharArray>,
     homeRowIndex: Int,
     letters: Map<String, Double>,
+    spaceincludedletters:Map<String, Double>,
     verbose: Boolean,
     layoutName: String,
     datasetName: String
@@ -67,12 +69,20 @@ fun rowUsageAnalysis(
     // Változók a sorok százalékainak gyűjtésére (dinamikusan a sorok számához igazítva)
     val numRows = rows.size
     val rowTotals = DoubleArray(numRows) { 0.0 }
+    val rowTotalSpace = DoubleArray(numRows) { 0.0 }
 
     // 2. Karaktergyakoriság fájl/adat feldolgozása
     for ((letter, percentage) in letters) {
         val row = charToRow[letter]
         if (row != null) {
             rowTotals[row] += percentage
+        }
+    }
+    //szóközös verzió
+    for ((letter, percentage) in spaceincludedletters) {
+        val row = charToRow[letter]
+        if (row != null) {
+            rowTotalSpace[row] += percentage
         }
     }
 
@@ -126,7 +136,7 @@ fun rowUsageAnalysis(
                     1 -> "Alsó sor (Bottom)"
                     else -> "Sor $i"
                 }
-                writer.write("$rowName: %.4f%%".format(rowTotals[i]))
+                writer.write("$rowName: %.4f%%".format(rowTotalSpace[i]))
                 writer.newLine()
             }
         }

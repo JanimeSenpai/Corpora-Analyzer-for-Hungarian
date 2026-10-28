@@ -79,6 +79,11 @@ fun spaceSfs1Analysis(
         }
     }
 
+    charToPos.toList().sortedBy {it.second.finger}.forEach {
+        println(it)
+    }
+
+
     // Tömbök kiterjesztve 10 elemre
     val fingerSfs1 = DoubleArray(10) { 0.0 }
     val fingerSks1 = DoubleArray(10) { 0.0 }
@@ -86,7 +91,6 @@ fun spaceSfs1Analysis(
     var totalSks1 = 0.0
     val fingerSfsPenalty = DoubleArray(10) { 0.0 }
     var totalSfsPenalty = 0.0
-
     // 2. Szóközös Trigram fájl/adatok feldolgozása a memóriából
     for ((trigram, percentage) in corpusData.spaceIncludedTrigrams) {
         if (trigram.length == 3) {

@@ -34,6 +34,7 @@ fun launchHandBalanceAnalysis() {
         leftChars = layoutData.leftChars,
         rightChars = layoutData.rightChars,
         letters = corpusData.letters, // A szóköz nélküli százalékos térkép!
+        spaceincludedletters = corpusData.spaceincludedletters,
         verbose = true,
         layoutName = layoutData.name,
         datasetName = corpusData.datasetName
@@ -44,6 +45,7 @@ fun handBalanceAnalysis(
     leftChars: Array<CharArray>,
     rightChars: Array<CharArray>,
     letters: Map<String, Double>,
+    spaceincludedletters: Map<String, Double>,
     verbose: Boolean,
     layoutName: String,
     datasetName: String
@@ -73,11 +75,24 @@ fun handBalanceAnalysis(
         }
     }
 
+    var leftHand = 0.0
+    var rightHand = 0.0
     var leftHandTotal = 0.0
     var rightHandTotal = 0.0
-
+//println("space hand is ${charToHand["[SPACE]"]}")
     // 2. Karaktergyakoriság adatok feldolgozása (szóköz nélkül!)
     for ((letter, percentage) in letters) {
+        val hand = charToHand[letter]
+        if (hand != null) {
+            if (hand == 0) {
+                leftHand += percentage
+            } else {
+                rightHand += percentage
+            }
+        }
+    }
+
+    for ((letter, percentage) in spaceincludedletters) {
         val hand = charToHand[letter]
         if (hand != null) {
             if (hand == 0) {
@@ -88,12 +103,13 @@ fun handBalanceAnalysis(
         }
     }
 
+
     // A normalizálást továbbra is elvégezzük, biztosítva, hogy
     // pontosan 100%-ot adjon ki a bal és jobb aránya együttesen.
-    val totalValidHits = leftHandTotal + rightHandTotal
+    val totalValidHits = leftHand + rightHand
 
-    val leftRatio = if (totalValidHits > 0) (leftHandTotal / totalValidHits) * 100.0 else 0.0
-    val rightRatio = if (totalValidHits > 0) (rightHandTotal / totalValidHits) * 100.0 else 0.0
+    val leftRatio = if (totalValidHits > 0) (leftHand / totalValidHits) * 100.0 else 0.0
+    val rightRatio = if (totalValidHits > 0) (rightHand / totalValidHits) * 100.0 else 0.0
 
     // 3. Eredmények kiírása
     if (verbose) {
