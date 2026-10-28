@@ -3,11 +3,11 @@ package keyboard_analysis
 import java.io.File
 
 fun launchRowUsageAnalysis() {
-    println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards_simple mappából):")
+    println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards mappából):")
     var layoutName = readln().trim()
-    if (!layoutName.endsWith(".txt")) layoutName += ".txt"
+    if (!layoutName.endsWith(".yaml")) layoutName += ".yaml"
 
-    val layoutFile = File("keyboards_simple/$layoutName")
+    val layoutFile = File("keyboards/$layoutName")
     if (!layoutFile.exists()) {
         println("Hiba: A billentyűzet fájl nem található ($layoutFile).")
         return
@@ -17,113 +17,136 @@ fun launchRowUsageAnalysis() {
     var datasetName = readln().trim()
     if (!datasetName.endsWith(".txt")) datasetName += ".txt"
 
-    // Ide is a szimpla karaktergyakoriság kell
-    val charFreqFile = File("analysis_results/$datasetName/charfrequency.txt")
-    if (!charFreqFile.exists()) {
-        println("Hiba: A karaktergyakorisági fájl nem található ($charFreqFile).")
+    val layoutData = try {
+        LayoutParser.parseLayout(layoutFile)
+    } catch (e: Exception) {
+        println("Hiba a billentyűzet beolvasásakor: ${e.message}")
         return
     }
 
-    rowUsageAnalysis(layoutFile, charFreqFile, layoutName.removeSuffix(".txt"))
+    val corpusData = CorpusData.loadFromDataset(datasetName)
+    if (corpusData.letters.isEmpty()) {
+        println("Hiba: A karaktergyakorisági adatok nem töltődtek be.")
+        return
+    }
+
+    val rows = layoutData.getRows()
+
+    rowUsageAnalysis(
+        rows = rows,
+        homeRowIndex = layoutData.homeRowIndex,
+        letters = corpusData.letters, // Itt már a százalékos Map<String, Double> megy át
+        verbose = true,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 }
 
-fun rowUsageAnalysis(layoutFile: File, charFreqFile: File, rawLayoutName: String) {
-    println("Sorok Terhelésének Elemzése (Row Usage) folyamatban...")
+fun rowUsageAnalysis(
+    rows: List<CharArray>,
+    homeRowIndex: Int,
+    letters: Map<String, Double>,
+    verbose: Boolean,
+    layoutName: String,
+    datasetName: String
+): DoubleArray {
+    if (verbose) println("Sorok Terhelésének Elemzése (Row Usage) folyamatban...")
 
     // 1. Kiosztás beolvasása (Itt a Sor (Row) koordináta kell)
-    val charToRow = mutableMapOf<Char, Int>()
+    val charToRow = mutableMapOf<String, Int>()
 
-    layoutFile.useLines { lines ->
-        lines.forEachIndexed { fingerIndex, line ->
-            if (fingerIndex < 8) {
-                val cleanLine = line.lowercase().filter { !it.isWhitespace() }
-
-                for (i in cleanLine.indices) {
-                    val char = cleanLine[i]
-
-                    // A helykitöltő alulvonást átugorjuk
-                    if (char == '_') continue
-
-                    // A sor kiszámítása (0: Num, 1: Top, 2: Home, 3: Bottom)
-                    val row = i % 4
-
-                    charToRow[char] = row
-                }
+    for (r in rows.indices) {
+        for (char in rows[r]) { // <-- Itt is javítva a bejárás
+            val lowerChar = char.lowercaseChar()
+            // A helykitöltő alulvonást és a szóközöket átugorjuk
+            if (lowerChar != '_' && !lowerChar.isWhitespace()) {
+                charToRow[lowerChar.toString()] = r
             }
         }
     }
+    // Változók a sorok százalékainak gyűjtésére (dinamikusan a sorok számához igazítva)
+    val numRows = rows.size
+    val rowTotals = DoubleArray(numRows) { 0.0 }
 
-    // Változók a 4 sor százalékainak gyűjtésére
-    val rowTotals = DoubleArray(4) { 0.0 }
-
-    // 2. Karaktergyakoriság fájl feldolgozása
-    charFreqFile.useLines { lines ->
-        var isFirstLine = true
-
-        lines.forEach { line ->
-            if (isFirstLine) {
-                isFirstLine = false
-                return@forEach
-            }
-
-            val parts = line.split('\t')
-            if (parts.size >= 2) {
-                val charStr = parts[0]
-                if (charStr.isNotEmpty()) {
-                    val char = charStr[0]
-                    val percentageStr = parts[1].replace("%", "").replace(",", ".")
-                    val percentage = percentageStr.toDoubleOrNull() ?: 0.0
-
-                    val row = charToRow[char]
-                    if (row != null) {
-                        rowTotals[row] += percentage
-                    }
-                }
-            }
+    // 2. Karaktergyakoriság fájl/adat feldolgozása
+    for ((letter, percentage) in letters) {
+        val row = charToRow[letter]
+        if (row != null) {
+            rowTotals[row] += percentage
         }
     }
 
     // Normalizálás 100%-ra (szóköz és ismeretlen karakterek nélkül)
+    // Mivel ezek eleve százalékok, a totalValidHits kb 98-100% körül lesz, a hiányzó karakterektől függően
     val totalValidHits = rowTotals.sum()
+    val rowRatios = DoubleArray(numRows) { 0.0 }
 
-    val rowRatios = DoubleArray(4) { 0.0 }
     if (totalValidHits > 0) {
-        for (i in 0 until 4) {
+        for (i in 0 until numRows) {
             rowRatios[i] = (rowTotals[i] / totalValidHits) * 100.0
         }
     }
 
     // 3. Eredmények kiírása
-    val datasetName = charFreqFile.parentFile.name
-    val resultDir = File("analysis_results/$datasetName/$rawLayoutName")
-    resultDir.mkdirs()
+    if (verbose) {
+        val resultDir = File("analysis_results/$datasetName/$layoutName")
+        resultDir.mkdirs()
 
-    val outputFile = File(resultDir, "row_usage_analyzed.txt")
-    val rowNames = listOf("Számsor (Num)", "Felső sor (Top)", "Alapsor (Home)", "Alsó sor (Bottom)")
+        val outputFile = File(resultDir, "row_usage_analyzed.txt")
 
-    outputFile.bufferedWriter().use { writer ->
-        writer.write("--- SOROK TERHELÉSÉNEK ARÁNYA (ROW USAGE) ---")
-        writer.newLine()
-        writer.write("(Normalizálva, kizárólag a kiosztáson szereplő karakterekre)")
-        writer.newLine()
-        writer.newLine()
-
-        for (i in 0 until 4) {
-            writer.write("${rowNames[i]}: %.2f%%".format(rowRatios[i]))
+        outputFile.bufferedWriter().use { writer ->
+            writer.write("--- SOROK TERHELÉSÉNEK ARÁNYA (ROW USAGE) ---")
             writer.newLine()
+            writer.write("(Normalizálva, kizárólag a kiosztáson szereplő karakterekre)")
+            writer.newLine()
+            writer.newLine()
+
+            for (i in 0 until numRows) {
+                // Dinamikus sor-elnevezés
+                val rowName = when (i - homeRowIndex) {
+                    -2 -> "Számsor (Num)"
+                    -1 -> "Felső sor (Top)"
+                    0 -> "Alapsor (Home)"
+                    1 -> "Alsó sor (Bottom)"
+                    else -> "Sor $i"
+                }
+
+                writer.write("$rowName: %.2f%%".format(rowRatios[i]))
+                writer.newLine()
+            }
+
+            writer.newLine()
+            writer.write("Nyers gyakoriság összeg (szóköz nélkül):")
+            writer.newLine()
+            for (i in 0 until numRows) {
+                val rowName = when (i - homeRowIndex) {
+                    -2 -> "Számsor (Num)"
+                    -1 -> "Felső sor (Top)"
+                    0 -> "Alapsor (Home)"
+                    1 -> "Alsó sor (Bottom)"
+                    else -> "Sor $i"
+                }
+                writer.write("$rowName: %.4f%%".format(rowTotals[i]))
+                writer.newLine()
+            }
         }
 
-        writer.newLine()
-        writer.write("Nyers gyakoriság összeg (szóköz nélkül):")
-        writer.newLine()
-        for (i in 0 until 4) {
-            writer.write("${rowNames[i]}: %.4f%%".format(rowTotals[i]))
-            writer.newLine()
+        // Metrikák mentése
+        for (i in 0 until numRows) {
+            val metricName = when (i - homeRowIndex) {
+                -2 -> "row_num"
+                -1 -> "row_top"
+                0 -> "row_home"
+                1 -> "row_bottom"
+                else -> "row_$i"
+            }
+            saveRawMetric(datasetName, layoutName, metricName, rowRatios[i])
         }
+
+        println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Home sor aránya: %.2f%%)".format(
+            if (homeRowIndex in rowRatios.indices) rowRatios[homeRowIndex] else 0.0
+        ))
     }
-    saveRawMetric(datasetName, rawLayoutName, "row_num", rowRatios[0])
-    saveRawMetric(datasetName, rawLayoutName, "row_top", rowRatios[1])
-    saveRawMetric(datasetName, rawLayoutName, "row_home", rowRatios[2])
-    saveRawMetric(datasetName, rawLayoutName, "row_bottom", rowRatios[3])
-    println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Home sor aránya: %.2f%%)".format(rowRatios[2]))
+
+    return rowRatios
 }

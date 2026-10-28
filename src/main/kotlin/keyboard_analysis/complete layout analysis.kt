@@ -83,7 +83,7 @@ fun completeLayoutAnalysis(
 
     if (verbose) println("--------------------------------------------------")
     val rows = layoutData.getRows()
-    val rowPercentages = rowUsageAnalysis(rows, layoutData.homeRowIndex, corpusData.letters, verbose, layoutData.name,corpusData.datasetName)
+    val rowPercentages = rowUsageAnalysis(rows, layoutData.homeRowIndex, corpusData.letters, verbose, layoutData.name, corpusData.datasetName)
     val homeRowPercentage = if (layoutData.homeRowIndex in rowPercentages.indices) rowPercentages[layoutData.homeRowIndex] else 0.0
 
 
@@ -176,7 +176,13 @@ fun completeLayoutAnalysis(
     )
 
     if (verbose) println("--------------------------------------------------")
-    val redirectPercentage = redirectAnalysis(layoutData, corpusData, verbose)
+    val redirectPercentage = redirectAnalysis(
+        charMap = charToHandAndFingerMap, // Ugyanaz a térkép, amit a rollAnalysis is használt!
+        trigrams = corpusData.trigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 
     if (verbose) println("--------------------------------------------------")
     val spaceSfs1Penalty = spaceSfs1Analysis(layoutData, corpusData, verbose)
