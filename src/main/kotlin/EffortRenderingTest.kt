@@ -13,8 +13,7 @@ import java.io.File
 //The purpose of these functions is to test the Effort layout generation and rendering of effort heatmaps.
 //physical hardware is stored along the layouts so in general use these functions are not going to be used
 fun main() {
-    testLtsnErgoHeatmapRendering()
-    testMySymmetricalRowstaggerKeyboard()
+    testblankcolstagger()
 }
 fun standardKeyboardTest(){
     // Standard ISO/ANSI sor-eltolások az alapsorhoz (2. index) képest:
@@ -95,6 +94,84 @@ fun testMySymmetricalRowstaggerKeyboard(){
     println("Kép sikeresen legenerálva: MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
 
 
+}
+
+fun testblankcolstagger() {
+    println("--- EGYEDI COL-STAGGER HŐTÉRKÉP GENERÁLÁSA YAML ALAPJÁN ---")
+
+    // 1. Használjuk a már létező, szigorúan validált YAML parsert!
+    // Feltételezzük, hogy a keyboards mappában ott a fájl.
+    val layoutFile = File("keyboards/blankcolstagger.yaml")
+    if (!layoutFile.exists()) {
+        println("Hiba: A ${layoutFile.path} nem található!")
+        return
+    }
+
+    val layoutData = try {
+        LayoutParser.parseLayout(layoutFile)
+    } catch (e: Exception) {
+        println("Beolvasási hiba: ${e.message}")
+        return
+    }
+
+    // 2. Kinyerjük a KeyboardHalf és ColumnConfig adatokat a LayoutParserből
+    // Mivel a LayoutParser belsőleg már létrehozza ezeket, de a CombinedLayoutData nem
+    // tárolja a KeyboardHalf és ColumnConfig objektumokat (csak az Effort mátrixokat és a karaktereket),
+    // a hőtérképhez nekünk itt a tesztben egy pillanatra újra fel kell építenünk ezt a két apróságot,
+    // vagy egyből a CombinedLayoutData adataiból táplálkozunk.
+
+    val hw = layoutData.hardwareYaml
+    val stagger = when (hw.staggerType.lowercase()) {
+        "columnar_stagger" -> StaggerType.COLUMNAR_STAGGER
+        "row_stagger" -> StaggerType.ROW_STAGGER
+        else -> StaggerType.MATRIX
+    }
+
+    val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, hw.left.fingers.size, hw.left.offsets, hw.homeRowIndex)
+    val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, hw.right.fingers.size, hw.right.offsets, hw.homeRowIndex)
+
+    val leftConfigs = hw.left.fingers.indices.map { i ->
+        ColumnConfig(
+            colIndex = i,
+            anchorColIndex = hw.left.anchors[i],
+            finger = Finger.valueOf(when (hw.left.fingers[i].uppercase()) {
+                "P" -> "PINKY"
+                "R" -> "RING"
+                "M" -> "MIDDLE"
+                "I" -> "INDEX"
+                else -> "THUMB"
+            })
+        )
+    }
+
+    val rightConfigs = hw.right.fingers.indices.map { i ->
+        ColumnConfig(
+            colIndex = i,
+            anchorColIndex = hw.right.anchors[i],
+            finger = Finger.valueOf(when (hw.right.fingers[i].uppercase()) {
+                "P" -> "PINKY"
+                "R" -> "RING"
+                "M" -> "MIDDLE"
+                "I" -> "INDEX"
+                else -> "THUMB"
+            })
+        )
+    }
+
+    // 3. A renderer meghívása az opcionális karaktertömbök átadásával
+    EffortHeatmapRenderer.renderFullKeyboard(
+        leftHalf = leftHalf,
+        rightHalf = rightHalf,
+        leftEffort = layoutData.leftEffortMatrix.map { it.toList() }, // Array<DoubleArray> -> List<List<Double>>
+        rightEffort = layoutData.rightEffortMatrix.map { it.toList() },
+        leftcolumnConfig = leftConfigs,
+        rightcolumnConfig = rightConfigs,
+        leftChars = layoutData.leftChars,   // Átadjuk a tényleges betűket is!
+        rightChars = layoutData.rightChars,
+        outputPath = "blankcolstagger_heatmap.png"
+    )
+
+    println("A saját billentyűzet hőtérképe legenerálva: blankcolstagger")
 }
 
 fun testMyCustomColStaggerKeyboard() {

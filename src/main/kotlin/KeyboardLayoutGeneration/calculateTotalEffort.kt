@@ -37,7 +37,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightLateralStretch = 8.0
 
     // Cél: < 2-3%
-    val weightRedirect = 2.0
+    val weightRedirect = 4.0
 
     val weightSpaceSfs1 = 2.0
 
@@ -50,7 +50,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightRow5 = 0.0 // Thumb row
 
     // --- 2. JUTALMAZÓ SÚLYOK (Maximalizálandó értékek -> csökkentik a Total Effortot) ---
-    val weightHomeRow = 1.0
+    val weightHomeRow = 0.86
 
     // Cél: minél magasabb, együttesen > 40-50%
     val weightAlternation = 1.0

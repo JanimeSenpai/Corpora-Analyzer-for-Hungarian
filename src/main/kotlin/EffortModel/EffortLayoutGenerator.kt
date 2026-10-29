@@ -9,8 +9,8 @@ class CustomKeyboardEffortGenerator(
     private val keyboardHalf: KeyboardHalf,
     private val columnConfigs: List<ColumnConfig>,
     private val angleOfApproachDegrees: Double = 0.0, // Osztott billentyűzetnél 0 fok!
-    private val lateralPenaltyPx: Double = 2.0,
-    private val distancePenaltyPd: Double = 1.3,
+    private val lateralPenaltyPx: Double = 2.2, //2.0 eredetileg
+    private val distancePenaltyPd: Double = 1.3,  //1.3 eredetileg
     private val activationMargin: Double = 0.3,
     private val useOptimalFingerAssignment: Boolean = false,
     private val boxInKeySpace: Boolean = false,
