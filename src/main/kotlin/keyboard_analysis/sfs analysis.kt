@@ -79,8 +79,10 @@ fun spaceSfs1Analysis(
         }
     }
 
-    charToPos.toList().sortedBy {it.second.finger}.forEach {
-        println(it)
+    if(verbose) {
+        charToPos.toList().sortedBy { it.second.finger }.forEach {
+            println(it)
+        }
     }
 
 

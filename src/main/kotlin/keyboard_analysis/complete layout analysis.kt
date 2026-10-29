@@ -1,5 +1,6 @@
 package keyboard_analysis
 
+import KeyboardLayoutGeneration.calculateTotalEffort
 import java.io.File
 
 data class LayoutAnalysisResult(
@@ -172,8 +173,7 @@ fun completeLayoutAnalysis(
     // 1. Kéz-hozzárendelés feltérképezése (Karakter -> Kéz: 0 = Bal, 1 = Jobb)
     // Ez automatikusan támogatja a hüvelykujjakat (Thumb clusterek) is!
     val charToHandMap = mutableMapOf<Char, Int>()
-    val fingerSetsForAlt = layoutData.getFingerCharacterSets()//ez nem felesleges?
-    for ((key, chars) in fingerSetsForAlt) {
+    for ((key, chars) in fingerSets) {
         val hand = if (key.startsWith("L")) 0 else 1
         chars.forEach { char -> charToHandMap[char] = hand }
     }
@@ -191,12 +191,11 @@ fun completeLayoutAnalysis(
     // 1. Kéz- és ujj-hozzárendelés feltérképezése a Roll elemzéshez
     // A szótár értéke egy Pair lesz: (Kéz indexe, Ujj indexe)
     val charToHandAndFingerMap = mutableMapOf<Char, Pair<Int, Int>>()
-    val fingerSetsForRoll = layoutData.getFingerCharacterSets()
     val fingerKeysForRoll = listOf("L_P", "L_R", "L_M", "L_I", "L_T", "R_T", "R_I", "R_M", "R_R", "R_P")
 
     for ((index, key) in fingerKeysForRoll.withIndex()) {
         val hand = if (key.startsWith("L")) 0 else 1 // 0 = Bal, 1 = Jobb
-        fingerSetsForRoll[key]?.forEach { char ->
+        fingerSets[key]?.forEach { char ->
             charToHandAndFingerMap[char] = Pair(hand, index)
         }
     }
@@ -230,12 +229,12 @@ fun completeLayoutAnalysis(
     if (verbose) println("--------------------------------------------------")
     val spaceSfs1Penalty = spaceSfs1Analysis(layoutData, corpusData, verbose)
 
-    val totalEffort = calculateTotalEffort()
 
 
-    return LayoutAnalysisResult(
+// Előzetes eredményobjektum összeállítása
+    val preliminaryResult = LayoutAnalysisResult(
         layoutName = layoutData.name,
-        totalEffort = totalEffort,
+        totalEffort = 0.0,
         charReachEffort = charReachEffort,
         rowPercentages = rowPercentages,
         homeRowPercentage = homeRowPercentage,
@@ -245,14 +244,12 @@ fun completeLayoutAnalysis(
         sfbPercentage = sfbPercentage,
         alternationPercentage = alternationPercentage,
         rollPercentage = rollPercentage,
-        threerollPercentage = threeRollPercentage ,
+        threerollPercentage = threeRollPercentage,
         redirectPercentage = redirectPercentage,
         spaceSfs1Penalty = spaceSfs1Penalty
     )
+
+    val totalEffort = calculateTotalEffort(preliminaryResult)
+    return preliminaryResult.copy(totalEffort = totalEffort)
 }
 
-fun calculateTotalEffort():Double {
-    //az lesz a nagyon érdekes, hogy milyen arányban és súlyokkal vesszük figyelembe az összes eddigi paramétert, hogy aztán egy darab végső szám formájában jellemezzük az egész billentyűzetet betűelrendezéssel, fizikai kialakítással mindennel együtt
-
-    return 67.0
-}

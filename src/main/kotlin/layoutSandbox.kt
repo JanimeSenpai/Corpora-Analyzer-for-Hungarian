@@ -102,7 +102,7 @@ private fun parseHand(str: String): Boolean {
 }
 
 // Segédfüggvény a mátrix vizuális kiírásához
-private fun printLayout(layout: CombinedLayoutData) {
+ fun printLayout(layout: CombinedLayoutData) {
     println("\n=== ${layout.name} Mátrix ===")
 
     // 1. Felső sorok (fő mátrix) kiírása
