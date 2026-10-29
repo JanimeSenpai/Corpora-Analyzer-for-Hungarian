@@ -4,8 +4,6 @@ import java.io.File
 import kotlin.math.abs
 import kotlin.math.max
 
-// Egy egyszerű osztály a billentyűk pontos helyzetének (koordinátáinak) tárolására
-data class KeyPosition(val finger: Int, val row: Int, val col: Int)
 
 fun launchSpaceSfs1Analysis() {
     println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards mappából):")
@@ -47,37 +45,7 @@ fun spaceSfs1Analysis(
     if (verbose) println("Szóközökön átívelő SFS-1 Távolságalapú elemzése folyamatban...")
 
     // 1. Kéz, Ujj és Koordináta hozzárendelés feltérképezése
-    val charToPos = mutableMapOf<Char, KeyPosition>()
-
-    // Ujj indexek meghatározása (10 ujj a hüvelykujjak miatt)
-    val charToFinger = mutableMapOf<Char, Int>()
-    val fingerSets = layoutData.getFingerCharacterSets()
-    val fingerKeys = listOf("L_P", "L_R", "L_M", "L_I", "L_T", "R_T", "R_I", "R_M", "R_R", "R_P")
-    for ((index, key) in fingerKeys.withIndex()) {
-        fingerSets[key]?.forEach { char -> charToFinger[char] = index }
-    }
-
-    // Koordináták kinyerése a valós mátrixokból
-    // Bal kéz
-    for (r in layoutData.leftChars.indices) {
-        for (c in layoutData.leftChars[r].indices) {
-            val char = layoutData.leftChars[r][c]
-            if (char != '_') {
-                val finger = charToFinger[char]
-                if (finger != null) charToPos[char] = KeyPosition(finger, r, c)
-            }
-        }
-    }
-    // Jobb kéz
-    for (r in layoutData.rightChars.indices) {
-        for (c in layoutData.rightChars[r].indices) {
-            val char = layoutData.rightChars[r][c]
-            if (char != '_') {
-                val finger = charToFinger[char]
-                if (finger != null) charToPos[char] = KeyPosition(finger, r, c)
-            }
-        }
-    }
+    val charToPos = buildCharPositionMap(layoutData)
 
     if(verbose) {
         charToPos.toList().sortedBy { it.second.finger }.forEach {
