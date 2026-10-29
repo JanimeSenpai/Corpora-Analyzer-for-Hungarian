@@ -32,6 +32,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     // Cél: < 0.5% (ÚJ)
     val weightFullScissor = 15.0
+    val weightHalfScissor = weightFullScissor/2
 
     // Cél: < 1.5-2% (ÚJ)
     val weightLateralStretch = 8.0
@@ -79,6 +80,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
                 (result.pinkyOffPercentage * weightPinkyOff) +
                 (result.sfbPercentage * weightSfb) +
                 (result.fullScissorPercentage * weightFullScissor) +
+                (result.halfScissorPercentage * weightHalfScissor) +
                 (result.lateralStretchPercentage * weightLateralStretch) +
                 (result.redirectPercentage * weightRedirect) +
                 (result.spaceSfs1Penalty * weightSpaceSfs1) +

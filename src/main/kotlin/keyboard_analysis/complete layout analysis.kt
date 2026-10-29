@@ -20,7 +20,8 @@ data class LayoutAnalysisResult(
     val spaceSfs1Penalty: Double,
     val lateralStretchPercentage: Double,
     val fullScissorPercentage: Double,
-    val baseGravityEffort:Double //láthatóvá tesszük a ritka karakterek mozgását a billentyűzet szélén
+    val baseGravityEffort: Double, //láthatóvá tesszük a ritka karakterek mozgását a billentyűzet szélén
+    val halfScissorPercentage: Double
 )
 
 // 1. KONZOLOS INDÍTÓ FÜGGVÉNY (Egyszeri futás)
@@ -250,6 +251,14 @@ fun completeLayoutAnalysis(
         datasetName = corpusData.datasetName
     )
 
+val halfScissorPercentage = halfScissorAnalysis(
+    charPositions = charToPos,
+    bigrams = corpusData.bigrams,
+    verbose = verbose,
+    layoutName = layoutData.name,
+    datasetName = corpusData.datasetName
+)
+
     val baseGravityEffort = charEffortMap.values.sum()
 
 // Előzetes eredményobjektum összeállítása
@@ -270,6 +279,7 @@ fun completeLayoutAnalysis(
         spaceSfs1Penalty = spaceSfs1Penalty,
         lateralStretchPercentage = lateralStretchPercentage,
         fullScissorPercentage = fullScissorPercentage,
+        halfScissorPercentage = halfScissorPercentage,
         baseGravityEffort = baseGravityEffort
     )
 
