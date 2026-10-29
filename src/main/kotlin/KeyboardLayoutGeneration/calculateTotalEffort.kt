@@ -41,9 +41,11 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     val weightSpaceSfs1 = 2.0
 
+    val weightGravity = 0.5
+
     // Soronkénti terhelés súlyai (0: legfelső sor ... 5: thumb sor)
-    val weightRow0 = 7.0
-    val weightRow1 = 6.0
+    val weightRow0 = 16.0
+    val weightRow1 = 15.0
     val weightRow2 = 0.0
     val weightRow3 = 0.0 // Home row (ezt külön jutalmazzuk lent)
     val weightRow4 = 0.0
@@ -72,6 +74,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     // Büntetések összege (beleértve a két új metrikát)
     val penalties =
         (result.charReachEffort * weightCharReachEffort) +
+                (result.baseGravityEffort * weightGravity) +
                 (handImbalance * weightHandImbalance) +
                 (result.pinkyOffPercentage * weightPinkyOff) +
                 (result.sfbPercentage * weightSfb) +

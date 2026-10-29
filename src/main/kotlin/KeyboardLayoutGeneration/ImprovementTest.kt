@@ -93,7 +93,7 @@ fun longerimprovementTest(runs:Int=15) {
 
 
 // A runBlocking összeköti a hagyományos szinkron kódot a korutinok világával
-fun parallelimprovementTest() = runBlocking {
+fun parallelimprovementTest(runs:Int = 25) = runBlocking {
     val initialLayout = try {
         LayoutParser.parseLayout(File("keyboards/ltsnergomini.yaml"))
     } catch (e: Exception) {
@@ -103,7 +103,7 @@ fun parallelimprovementTest() = runBlocking {
 
     val corpusData = CorpusData.loadFromDataset("huszonkettoHuszonnegyeswikipediahuszonegy.txt")
 
-    val runs = 15
+
     println("=== SA OPTIMALIZÁLÁS INDÍTÁSA ($runs FUTÁS PÁRHUZAMOSAN) ===")
     val startTime = System.currentTimeMillis()
 

@@ -20,6 +20,7 @@ data class LayoutAnalysisResult(
     val spaceSfs1Penalty: Double,
     val lateralStretchPercentage: Double,
     val fullScissorPercentage: Double,
+    val baseGravityEffort:Double //láthatóvá tesszük a ritka karakterek mozgását a billentyűzet szélén
 )
 
 // 1. KONZOLOS INDÍTÓ FÜGGVÉNY (Egyszeri futás)
@@ -248,6 +249,9 @@ fun completeLayoutAnalysis(
         layoutName = layoutData.name,
         datasetName = corpusData.datasetName
     )
+
+    val baseGravityEffort = charEffortMap.values.sum()
+
 // Előzetes eredményobjektum összeállítása
     val preliminaryResult = LayoutAnalysisResult(
         layoutName = layoutData.name,
@@ -266,6 +270,7 @@ fun completeLayoutAnalysis(
         spaceSfs1Penalty = spaceSfs1Penalty,
         lateralStretchPercentage = lateralStretchPercentage,
         fullScissorPercentage = fullScissorPercentage,
+        baseGravityEffort = baseGravityEffort
     )
 
     val totalEffort = calculateTotalEffort(preliminaryResult)
