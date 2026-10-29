@@ -42,8 +42,8 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightSpaceSfs1 = 2.0
 
     // Soronkénti terhelés súlyai (0: legfelső sor ... 5: thumb sor)
-    val weightRow0 = 5.0
-    val weightRow1 = 3.0
+    val weightRow0 = 7.0
+    val weightRow1 = 6.0
     val weightRow2 = 0.0
     val weightRow3 = 0.0 // Home row (ezt külön jutalmazzuk lent)
     val weightRow4 = 0.0
@@ -54,8 +54,8 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     // Cél: minél magasabb, együttesen > 40-50%
     val weightAlternation = 1.0
-    val weightRoll = 1.0
-    val weightThreeRoll = 1.5
+    val weightRoll = 1.3
+    val weightThreeRoll = 1.6
 
     // Kéz-aszimmetria kiszámítása: |bal% - jobb%|
     val handImbalance = kotlin.math.abs(result.handBalanceLeft - result.handBalanceRight)

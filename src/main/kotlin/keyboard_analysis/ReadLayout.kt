@@ -181,16 +181,64 @@ object LayoutParser {
         val config = mapper.readValue(yamlFile, KeyboardConfigYaml::class.java)
         val hw = config.hardware
 
-        val stagger = when (hw.staggerType.lowercase()) {
+        val matrixLines = config.matrix.trim().lines().filter { it.isNotBlank() }
+
+        // --- VALIDÁCIÓ (Szigorú ellenőrzés beolvasás előtt) ---
+        val leftOffs = hw.left.offsets.size
+        val leftFings = hw.left.fingers.size
+        val leftAnchs = hw.left.anchors.size
+
+        val rightOffs = hw.right.offsets.size
+        val rightFings = hw.right.fingers.size
+        val rightAnchs = hw.right.anchors.size
+
+        // A teljes sorszámból 1 a thumb sor, a többi a fő mátrix sora
+        val expectedMainRows = hw.numRows - 1
+
+        // 1. Mátrix sorainak ellenőrzése
+        if (matrixLines.size != expectedMainRows) {
+            throw IllegalArgumentException("Invalid layout error: A mátrix sorainak száma (${matrixLines.size}) eltér a konfigurációban várt fő sorok számától ($expectedMainRows).")
+        }
+
+        val staggerMode = hw.staggerType.lowercase()
+
+        // 2. Kialakítás-specifikus ellenőrzések
+        if (staggerMode == "columnar_stagger" || staggerMode == "matrix") {
+            // Oszlop-eltolásnál az offseteknek az oszlopok (ujjak) számával kell megegyezniük
+            if (leftOffs != leftFings || leftFings != leftAnchs) {
+                throw IllegalArgumentException("Invalid layout error: Columnar/Matrix kialakítás esetén a bal kéz oszlopparamétereinek száma nem egyezik (offsets: $leftOffs, fingers: $leftFings, anchors: $leftAnchs).")
+            }
+            if (rightOffs != rightFings || rightFings != rightAnchs) {
+                throw IllegalArgumentException("Invalid layout error: Columnar/Matrix kialakítás esetén a jobb kéz oszlopparamétereinek száma nem egyezik (offsets: $rightOffs, fingers: $rightFings, anchors: $rightAnchs).")
+            }
+        } else if (staggerMode == "row_stagger") {
+            // Sor-eltolásnál az offseteknek a fő sorok számával kell megegyezniük
+            if (leftOffs != expectedMainRows) {
+                throw IllegalArgumentException("Invalid layout error: Row stagger kialakítás esetén a bal kéz offset paramétereinek száma ($leftOffs) nem egyezik a fő sorok számával ($expectedMainRows).")
+            }
+            if (rightOffs != expectedMainRows) {
+                throw IllegalArgumentException("Invalid layout error: Row stagger kialakítás esetén a jobb kéz offset paramétereinek száma ($rightOffs) nem egyezik a fő sorok számával ($expectedMainRows).")
+            }
+            // Az ujjak és horgonyok száma (oszlopok) viszont továbbra is meg kell egyezzen egymással
+            if (leftFings != leftAnchs) {
+                throw IllegalArgumentException("Invalid layout error: A bal kéz ujj- és horgonyparamétereinek száma nem egyezik (fingers: $leftFings, anchors: $leftAnchs).")
+            }
+            if (rightFings != rightAnchs) {
+                throw IllegalArgumentException("Invalid layout error: A jobb kéz ujj- és horgonyparamétereinek száma nem egyezik (fingers: $rightFings, anchors: $rightAnchs).")
+            }
+        } else {
+            throw IllegalArgumentException("Invalid layout error: Érvénytelen stagger_type megadás: '${hw.staggerType}'. Elfogadott értékek: columnar_stagger, row_stagger, matrix.")
+        }
+        // -------------------------------------------------------
+
+        val stagger = when (staggerMode) {
             "columnar_stagger" -> StaggerType.COLUMNAR_STAGGER
             "row_stagger" -> StaggerType.ROW_STAGGER
             else -> StaggerType.MATRIX
         }
 
-        // --- JAVÍTOTT OSZLOPSZÁM MEGHATÁROZÁS ---
-        // Az oszlopok számát mindig az ujjak listájának hossza adja, nem az offsets mérete!
-        val leftCols = hw.left.fingers.size
-        val rightCols = hw.right.fingers.size
+        val leftCols = leftFings
+        val rightCols = rightFings
 
         val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, leftCols, hw.left.offsets, hw.homeRowIndex)
         val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, rightCols, hw.right.offsets, hw.homeRowIndex)
@@ -210,7 +258,6 @@ object LayoutParser {
             )
         }
 
-        // Javítva: List<List<Double>> konvertálása Array<DoubleArray>-ré
         val leftEffort = CustomKeyboardEffortGenerator(
             keyboardHalf = leftHalf,
             columnConfigs = leftConfigs,
@@ -225,17 +272,15 @@ object LayoutParser {
             useOptimalFingerAssignment = hw.optimalFingerAssignment
         ).generateEffortMatrix().map { it.toDoubleArray() }.toTypedArray()
 
-
         val leftChars = Array(hw.numRows) { CharArray(leftCols) { '_' } }
         val rightChars = Array(hw.numRows) { CharArray(rightCols) { '_' } }
 
-        // --- ÚJ, JAVÍTOTT BEOLVASÁS ---
-        val matrixLines = config.matrix.trim().lines().filter { it.isNotBlank() }
-        val mainRows = hw.numRows - 1
-
-        for (r in 0 until minOf(mainRows, matrixLines.size)) {
-            // Eltávolítjuk az összes szóközt a sorból (pl. "___ _ _ ___   ___ _ w xq_" -> "________wxq_")
+        for (r in 0 until expectedMainRows) {
             val cleanLine = matrixLines[r].replace(Regex("\\s+"), "")
+
+            if (cleanLine.length < leftCols + rightCols) {
+                throw IllegalArgumentException("Invalid layout error: A mátrix $r. sorában túl kevés karakter található (${cleanLine.length}). Pontosan ${leftCols + rightCols} karakter szükséges a szóközök (szeparátorok) nélkül.")
+            }
 
             // A bal kéz levágja az elejéről a saját karaktereit (pontosan annyit, ahány oszlopa van)
             val leftString = cleanLine.take(leftCols)
@@ -243,8 +288,8 @@ object LayoutParser {
             // A jobb kéz megkapja a maradékot
             val rightString = cleanLine.drop(leftCols).take(rightCols)
 
-            for (c in 0 until minOf(leftCols, leftString.length)) leftChars[r][c] = leftString[c]
-            for (c in 0 until minOf(rightCols, rightString.length)) rightChars[r][c] = rightString[c]
+            for (c in 0 until leftCols) leftChars[r][c] = leftString[c]
+            for (c in 0 until rightCols) rightChars[r][c] = rightString[c]
         }
 
         // Thumb sor beolvasása közvetlenül a stringekből (1 karakteres méretű tömb)
@@ -261,6 +306,6 @@ object LayoutParser {
         "M" -> Finger.MIDDLE
         "I" -> Finger.INDEX
         "T" -> Finger.THUMB
-        else -> throw IllegalArgumentException("Ismeretlen ujj kód: $code")
+        else -> throw IllegalArgumentException("Invalid layout error: Ismeretlen ujj kód a konfigurációban: '$code'. Elfogadott értékek: P, R, M, I, T.")
     }
 }
