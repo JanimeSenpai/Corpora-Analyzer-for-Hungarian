@@ -5,6 +5,7 @@ import keyboard_analysis.LayoutParser
 import keyboard_analysis.completeLayoutAnalysis
 import keyboard_analysis.printLayout
 import layoutcharefforts
+import renderCharEffortlayout
 import java.io.File
 
 fun main(){
@@ -19,5 +20,6 @@ fun improvementTest (){
     printLayout(bestlayout)
     completeLayoutAnalysis(bestlayout, corpusData, verbose = true)
     layoutcharefforts(bestlayout)
+    renderCharEffortlayout(bestlayout)
 
 }

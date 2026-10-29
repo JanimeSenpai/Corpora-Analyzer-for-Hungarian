@@ -19,7 +19,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     //TODO
 
     // --- 1. BÜNTETŐ SÚLYOK (Minimalizálandó értékek -> növelik a Total Effortot) ---
-    val weightCharReachEffort = 30.0
+    val weightCharReachEffort = 40.0
     val weightHandImbalance = 0.5
     val weightPinkyOff = 1.5
     val weightSfb = 3.0
@@ -37,7 +37,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightRow5 = 0.0 // Thumb row
 
     // --- 2. JUTALMAZÓ SÚLYOK (Maximalizálandó értékek -> csökkentik a Total Effortot) ---
-    val weightHomeRow = 0.9
+    val weightHomeRow = 0.5
     val weightAlternation = 0.3
     val weightRoll = 0.4
     val weightThreeRoll = 0.6
