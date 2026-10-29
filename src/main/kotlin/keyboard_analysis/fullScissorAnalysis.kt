@@ -95,7 +95,7 @@ fun fullScissorAnalysis(
                 writer.write("Teljes Full Scissor (FSB): %.4f%%".format(totalScissor))
                 writer.newLine()
             }
-            // saveRawMetric(datasetName, layoutName, "full_scissor_total", totalScissor)
+            saveRawMetric(datasetName, layoutName, "full_scissor_total", totalScissor)
             println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (FSB: %.4f%%)".format(totalScissor))
         } else {
             println("Full Scissor Bigrams (FSB): ${String.format("%.3f", totalScissor)}%")

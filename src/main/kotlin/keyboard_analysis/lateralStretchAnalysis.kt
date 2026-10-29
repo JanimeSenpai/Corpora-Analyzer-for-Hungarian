@@ -77,8 +77,7 @@ fun lateralStretchAnalysis(
                 writer.write("Teljes Lateral Stretch: %.4f%%".format(totalStretch))
                 writer.newLine()
             }
-            // Ha használod a saveRawMetric függvényt, itt kikommentelve bent hagytam:
-            // saveRawMetric(datasetName, layoutName, "lateral_stretch_total", totalStretch)
+             saveRawMetric(datasetName, layoutName, "lateral_stretch_total", totalStretch)
             println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (Lateral Stretch: %.4f%%)".format(totalStretch))
         } else {
             println("Lateral Stretch Bigrams: ${String.format("%.3f", totalStretch)}%")

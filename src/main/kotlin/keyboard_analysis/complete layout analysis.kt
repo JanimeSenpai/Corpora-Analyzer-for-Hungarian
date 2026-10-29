@@ -232,9 +232,22 @@ fun completeLayoutAnalysis(
     val spaceSfs1Penalty = spaceSfs1Analysis(layoutData, corpusData, verbose)
 
     val charToPos = buildCharPositionMap(layoutData)
-    val lateralStretchPercentage = lateralStretchAnalysis(charToPos,corpusData.bigrams,verbose)
 
-    val fullScissorPercentage = fullScissorAnalysis(charToPos,corpusData.bigrams,verbose)
+    val lateralStretchPercentage = lateralStretchAnalysis(
+        charPositions = charToPos,
+        bigrams = corpusData.bigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
+
+    val fullScissorPercentage = fullScissorAnalysis(
+        charPositions = charToPos,
+        bigrams = corpusData.bigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
 // Előzetes eredményobjektum összeállítása
     val preliminaryResult = LayoutAnalysisResult(
         layoutName = layoutData.name,
