@@ -187,14 +187,14 @@ object LayoutParser {
             else -> StaggerType.MATRIX
         }
 
-        // Javítva: A KeyboardHalf most 6 paramétert kap, megfelelő sorrendben.
-        // A hw.left.offsets.size a numColumns.
-        val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, hw.left.offsets.size, hw.left.offsets, hw.homeRowIndex)
-        val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, hw.right.offsets.size, hw.right.offsets, hw.homeRowIndex)
+        // --- JAVÍTOTT OSZLOPSZÁM MEGHATÁROZÁS ---
+        // Az oszlopok számát mindig az ujjak listájának hossza adja, nem az offsets mérete!
+        val leftCols = hw.left.fingers.size
+        val rightCols = hw.right.fingers.size
 
-        // Javítva: A ColumnConfig most a megfelelő 3 paramétert kapja: colIndex, anchorColIndex, finger.
-        // A hw.left.fingers mérete adja az oszlopok számát. Végigmegyünk az indexeken, hogy
-        // a colIndex meglegyen.
+        val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, leftCols, hw.left.offsets, hw.homeRowIndex)
+        val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, rightCols, hw.right.offsets, hw.homeRowIndex)
+
         val leftConfigs = hw.left.fingers.indices.map { i ->
             ColumnConfig(
                 colIndex = i,
@@ -225,8 +225,7 @@ object LayoutParser {
             useOptimalFingerAssignment = hw.optimalFingerAssignment
         ).generateEffortMatrix().map { it.toDoubleArray() }.toTypedArray()
 
-        val leftCols = hw.left.offsets.size
-        val rightCols = hw.right.offsets.size
+
         val leftChars = Array(hw.numRows) { CharArray(leftCols) { '_' } }
         val rightChars = Array(hw.numRows) { CharArray(rightCols) { '_' } }
 

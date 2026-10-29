@@ -19,12 +19,14 @@ object EffortHeatmapRenderer {
         rightEffort: List<List<Double>>,
         leftcolumnConfig: List<ColumnConfig>,
         rightcolumnConfig: List<ColumnConfig>,
+        leftChars: Array<CharArray>? = null,   // <--- ÚJ: Opcionális bal karakterek
+        rightChars: Array<CharArray>? = null,  // <--- ÚJ: Opcionális jobb karakterek
         outputPath: String = "full_keyboard_heatmap.png"
     ) {
         val keySize = 65
         val padding = 6
         val margin = 40
-        val splitGap = 1.5 // Két kéz közötti távolság gomb-egységben (u)
+        val splitGap = 1.5
 
         val leftCoords = (0 until leftHalf.numRows).flatMap { r ->
             (0 until leftHalf.numColumns).map { c -> leftHalf.getPhysicalCoordinate(r, c) }
@@ -33,7 +35,6 @@ object EffortHeatmapRenderer {
             (0 until rightHalf.numColumns).map { c -> rightHalf.getPhysicalCoordinate(r, c) }
         }
 
-        // Minimumok és maximumok meghatározása a lecsúszásmentes normalizáláshoz
         val leftMinX = leftCoords.minOfOrNull { it.x } ?: 0.0
         val leftMaxX = leftCoords.maxOfOrNull { it.x } ?: 0.0
         val rightMinX = rightCoords.minOfOrNull { it.x } ?: 0.0
@@ -43,8 +44,10 @@ object EffortHeatmapRenderer {
         val globalMaxY = (leftCoords + rightCoords).maxOfOrNull { it.y } ?: 0.0
 
         val allEfforts = leftEffort.flatten() + rightEffort.flatten()
-        val minEffort = 1.0 // A Colemak-DH skála minimuma (mutatóujj alapsor)
-        val maxEffort = max(allEfforts.maxOrNull() ?: 5.0, 4.5)
+        // Az effort < 99.0 szűrő biztosítja, hogy a dummy értékeket ne vegyük bele a színskálába
+        val validEfforts = allEfforts.filter { it < 99.0 }
+        val minEffort = 1.0
+        val maxEffort = max(validEfforts.maxOrNull() ?: 5.0, 4.5)
 
         val leftSpanX = leftMaxX - leftMinX
         val rightSpanX = rightMaxX - rightMinX
@@ -63,9 +66,14 @@ object EffortHeatmapRenderer {
 
         g2d.color = Color(35, 35, 40)
         g2d.fillRect(0, 0, totalWidth, totalHeight)
-        g2d.font = Font("SansSerif", Font.BOLD, 16)
 
-        fun drawKey(normX: Double, normY: Double, effort: Double, isHomeKey: Boolean) {
+        // Betűtípusok a kétféle állapothoz
+        val fontCharBig = Font("SansSerif", Font.BOLD, 22)
+        val fontEffortSmall = Font("SansSerif", Font.BOLD, 12)
+        val fontEffortBig = Font("SansSerif", Font.BOLD, 16)
+
+        // Bővített drawKey függvény, ami már elfogadja a karaktert is
+        fun drawKey(normX: Double, normY: Double, effort: Double, isHomeKey: Boolean, keyChar: Char?) {
             val pixelX = margin + (normX * keySize).roundToInt()
             val pixelY = margin + (normY * keySize).roundToInt()
             val boxSize = keySize - padding
@@ -77,39 +85,56 @@ object EffortHeatmapRenderer {
             g2d.color = Color(red.coerceIn(0, 255), green.coerceIn(0, 255), 60)
             g2d.fillRoundRect(pixelX, pixelY, boxSize, boxSize, 14, 14)
 
-            // Az alapsor 8 fő gombját vékony kerettel kiemeljük a könnyebb tájékozódásért
             if (isHomeKey) {
                 g2d.color = Color(220, 40, 40)
                 g2d.drawRoundRect(pixelX, pixelY, boxSize, boxSize, 14, 14)
             }
 
-            g2d.color = Color(20, 20, 20)
-            val text = String.format(Locale.US, "%.1f", effort)
-            val fm = g2d.fontMetrics
-            val textX = pixelX + (boxSize - fm.stringWidth(text)) / 2
-            val textY = pixelY + ((boxSize - fm.height) / 2) + fm.ascent
-            g2d.drawString(text, textX, textY)
+            val effortText = String.format(Locale.US, "%.1f", effort)
+
+            // Ha van betűnk (és az nem alulvonás vagy dummy '#'), akkor a betűt tesszük középre
+            if (keyChar != null && keyChar != '_' && keyChar != '#') {
+                // 1. Karakter középre
+                g2d.color = Color(20, 20, 20)
+                g2d.font = fontCharBig
+                val fmChar = g2d.fontMetrics
+                val charStr = keyChar.toString().uppercase()
+                val textX = pixelX + (boxSize - fmChar.stringWidth(charStr)) / 2
+                val textY = pixelY + ((boxSize - fmChar.height) / 2) + fmChar.ascent
+                g2d.drawString(charStr, textX, textY)
+
+                // 2. Fáradtság (Effort) a jobb felső sarokba
+                g2d.color = Color(20, 20, 20, 160) // Kicsit áttetszőbb fekete
+                g2d.font = fontEffortSmall
+                val fmEffort = g2d.fontMetrics
+                val effX = pixelX + boxSize - fmEffort.stringWidth(effortText) - 4
+                val effY = pixelY + fmEffort.ascent + 2
+                g2d.drawString(effortText, effX, effY)
+            } else {
+                // Eredeti viselkedés: Csak az effort van középen
+                g2d.color = Color(20, 20, 20)
+                g2d.font = fontEffortBig
+                val fm = g2d.fontMetrics
+                val textX = pixelX + (boxSize - fm.stringWidth(effortText)) / 2
+                val textY = pixelY + ((boxSize - fm.height) / 2) + fm.ascent
+                g2d.drawString(effortText, textX, textY)
+            }
         }
 
-
-        // Bal kéz home tartományának meghatározása a ring és middle ujjak horgonyaiból
         val leftHomeCols = leftcolumnConfig.filter { it.finger == Finger.RING || it.finger == Finger.MIDDLE }.map { it.anchorColIndex }
         val leftHomeRange = ((leftHomeCols.minOrNull() ?: 0) - 1)..((leftHomeCols.maxOrNull() ?: 0) + 1)
 
-        // Jobb kéz home tartományának meghatározása a ring és middle ujjak horgonyaiból
         val rightHomeCols = rightcolumnConfig.filter { it.finger == Finger.RING || it.finger == Finger.MIDDLE }.map { it.anchorColIndex }
         val rightHomeRange = ((rightHomeCols.minOrNull() ?: 0) - 1)..((rightHomeCols.maxOrNull() ?: 0) + 1)
 
-        println("lefthomerange=$leftHomeRange righthomerange=$rightHomeRange")
-
-
-// Bal kéz kirajzolása
+        // Bal kéz kirajzolása (Karakterek biztonságos lekérésével)
         for (r in 0 until leftHalf.numRows) {
             for (c in 0 until leftHalf.numColumns) {
-                if (leftEffort[r][c] < 99.0) { // CSAK AZ ÉRVÉNYES GOMBOKAT RAJZOLJUK
+                if (leftEffort[r][c] < 99.0) { // Biztonsági szűrés a dummy (rongyos tömbös) gombokra
                     val coord = leftHalf.getPhysicalCoordinate(r, c)
                     val isHome = (r == leftHalf.homeRowIndex && c in leftHomeRange)
-                    drawKey(coord.x - leftMinX, coord.y - globalMinY, leftEffort[r][c], isHome)
+                    val charToDraw = if (leftChars != null && r < leftChars.size && c < leftChars[r].size) leftChars[r][c] else null
+                    drawKey(coord.x - leftMinX, coord.y - globalMinY, leftEffort[r][c], isHome, charToDraw)
                 }
             }
         }
@@ -117,10 +142,11 @@ object EffortHeatmapRenderer {
         // Jobb kéz kirajzolása
         for (r in 0 until rightHalf.numRows) {
             for (c in 0 until rightHalf.numColumns) {
-                if (rightEffort[r][c] < 99.0) { // CSAK AZ ÉRVÉNYES GOMBOKAT RAJZOLJUK
+                if (rightEffort[r][c] < 99.0) {
                     val coord = rightHalf.getPhysicalCoordinate(r, c)
                     val isHome = (r == rightHalf.homeRowIndex && c in rightHomeRange)
-                    drawKey(rightStartX + (coord.x - rightMinX), coord.y - globalMinY, rightEffort[r][c], isHome)
+                    val charToDraw = if (rightChars != null && r < rightChars.size && c < rightChars[r].size) rightChars[r][c] else null
+                    drawKey(rightStartX + (coord.x - rightMinX), coord.y - globalMinY, rightEffort[r][c], isHome, charToDraw)
                 }
             }
         }

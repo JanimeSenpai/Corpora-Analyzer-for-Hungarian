@@ -13,6 +13,7 @@ import java.io.File
 //physical hardware is stored along the layouts so in general use these functions are not going to be used
 fun main() {
     testLtsnErgoHeatmapRendering()
+    testMySymmetricalRowstaggerKeyboard()
 }
 fun standardKeyboardTest(){
     // Standard ISO/ANSI sor-eltolások az alapsorhoz (2. index) képest:
@@ -42,12 +43,12 @@ fun standardKeyboardTest(){
     // 1. Kép: Hagyományos ujjrend (a PDF 8. oldalának alsó ábrája)
     val leftTrad = ColemakDhEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = false).generateEffortMatrix()
     val rightTrad = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = false).generateEffortMatrix()
-    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftTrad, rightTrad,leftConfigs,rightConfigs, "standard_traditional_heatmap.png")
+    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftTrad, rightTrad,leftConfigs,rightConfigs, outputPath = "standard_traditional_heatmap.png")
 
     // 2. Kép: Optimális ujjrend (a PDF 8. oldalának felső ábrája)
     val leftOpt = ColemakDhEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
     val rightOpt = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
-    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt,leftConfigs,rightConfigs, "standard_optimal_heatmap.png")
+    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt,leftConfigs,rightConfigs, outputPath = "standard_optimal_heatmap.png")
 
     println("Képek sikeresen legenerálva: standard_traditional_heatmap.png és standard_optimal_heatmap.png")
 }
@@ -57,8 +58,8 @@ fun testMySymmetricalRowstaggerKeyboard(){
     // szimmetrikus eltolások a fizikai megvalósításnak megfelelően
 
     // Num (-0.5u), Top (-0.25u), Home (0.0u), Bottom (+0.5u)
-    val offsetsright = listOf(0.25, 0.25, 0.0, 0.5)
     val offsetsleft = listOf(-0.25, -0.25, 0.0, -0.5)
+    val offsetsright = listOf(0.25, 0.25, 0.0, 0.5)
     val leftHalf = KeyboardHalf(Hand.LEFT, StaggerType.ROW_STAGGER, 4, 8, offsetsleft)
     val leftConfigs = listOf(
         ColumnConfig(colIndex = 0, anchorColIndex = 2, finger = Finger.PINKY),  // Külső extra 2
@@ -88,7 +89,7 @@ fun testMySymmetricalRowstaggerKeyboard(){
    // Kép: Optimális ujjrend (a PDF 8. oldalának felső ábrája)
     val leftOpt = ColemakDhEffortGenerator(leftHalf, leftConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
     val rightOpt = ColemakDhEffortGenerator(rightHalf, rightConfigs, useOptimalFingerAssignment = true).generateEffortMatrix()
-    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt, leftConfigs,rightConfigs,"MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
+    EffortHeatmapRenderer.renderFullKeyboard(leftHalf, rightHalf, leftOpt, rightOpt, leftConfigs,rightConfigs, outputPath = "MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
 
     println("Kép sikeresen legenerálva: MySymmetricalRowstaggerKeyboard_optimal_heatmap.png")
 
@@ -176,7 +177,7 @@ fun testMyCustomColStaggerKeyboard() {
 }
 
 fun testLtsnErgoHeatmapRendering() {
-    val layoutName = "ltsn_ergo.yaml"
+    val layoutName = "ltsnergorowstagger.yaml"
     val layoutFile = File("keyboards/$layoutName")
 
     assert(layoutFile.exists()) { "Hiba: A fájl nem található: ${layoutFile.absolutePath}" }
@@ -192,9 +193,9 @@ fun testLtsnErgoHeatmapRendering() {
         else -> StaggerType.MATRIX
     }
 
-    // Figyelem: A numRows itt a fizikai sorok száma (6)
-    val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, hw.left.offsets.size, hw.left.offsets, hw.homeRowIndex)
-    val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, hw.right.offsets.size, hw.right.offsets, hw.homeRowIndex)
+// Figyelem: A tesztben is az ujjak száma (fingers.size) kell, hogy adja az oszlopokat!
+    val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, hw.left.fingers.size, hw.left.offsets, hw.homeRowIndex)
+    val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, hw.right.fingers.size, hw.right.offsets, hw.homeRowIndex)
 
     val leftConfigs = hw.left.fingers.indices.map { i ->
         ColumnConfig(colIndex = i, anchorColIndex = hw.left.anchors[i], finger = parseFingerForTest(hw.left.fingers[i]))
@@ -228,6 +229,22 @@ fun testLtsnErgoHeatmapRendering() {
         }
     }
 
+    val paddedLeftChars = layoutData.leftChars.mapIndexed { r, row ->
+        if (r == hw.numRows - 1) {
+            CharArray(cols) { c -> if (c == leftThumbCol) row[0] else '_' }
+        } else {
+            row.clone()
+        }
+    }.toTypedArray()
+
+    val paddedRightChars = layoutData.rightChars.mapIndexed { r, row ->
+        if (r == hw.numRows - 1) {
+            CharArray(cols) { c -> if (c == rightThumbCol) row[0] else '_' }
+        } else {
+            row.clone()
+        }
+    }.toTypedArray()
+
     println("=== Heatmap renderelés indítása: LTSN_Ergo ===")
 
     // 4. A renderelő meghívása a vasalt (padded) mátrixokkal
@@ -238,9 +255,11 @@ fun testLtsnErgoHeatmapRendering() {
         rightEffort = paddedRightEffort,
         leftcolumnConfig = leftConfigs,
         rightcolumnConfig = rightConfigs,
-        outputPath = "ltsn_ergo_heatmap.png"
+        leftChars = paddedLeftChars,     // <--- Bekerült az opcionális paraméter
+        rightChars = paddedRightChars,   // <--- Bekerült az opcionális paraméter
+        outputPath = "${layoutName}_heatmap.png"
     )
-    println("A billentyűzet hőtérképe legenerálva: ltsn_ergo_heatmap.png")
+    println("A billentyűzet hőtérképe legenerálva: ${layoutName}_heatmap.png")
 }
 
 // Segédfüggvény a teszthez a string -> Finger konverzióra
