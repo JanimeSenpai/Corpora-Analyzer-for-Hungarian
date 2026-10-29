@@ -25,7 +25,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightHandImbalance = 0.5
 
     // Cél: < 4-6%
-    val weightPinkyOff = 3.0
+    val weightPinkyOff = 5.0
 
     // Cél: < 1-1.5%
     val weightSfb = 10.0
