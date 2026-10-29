@@ -103,21 +103,25 @@ object EffortHeatmapRenderer {
         println("lefthomerange=$leftHomeRange righthomerange=$rightHomeRange")
 
 
-        // Bal kéz kirajzolása
+// Bal kéz kirajzolása
         for (r in 0 until leftHalf.numRows) {
             for (c in 0 until leftHalf.numColumns) {
-                val coord = leftHalf.getPhysicalCoordinate(r, c)
-                val isHome = (r == leftHalf.homeRowIndex && c in leftHomeRange)
-                drawKey(coord.x - leftMinX, coord.y - globalMinY, leftEffort[r][c], isHome)
+                if (leftEffort[r][c] < 99.0) { // CSAK AZ ÉRVÉNYES GOMBOKAT RAJZOLJUK
+                    val coord = leftHalf.getPhysicalCoordinate(r, c)
+                    val isHome = (r == leftHalf.homeRowIndex && c in leftHomeRange)
+                    drawKey(coord.x - leftMinX, coord.y - globalMinY, leftEffort[r][c], isHome)
+                }
             }
         }
 
         // Jobb kéz kirajzolása
         for (r in 0 until rightHalf.numRows) {
             for (c in 0 until rightHalf.numColumns) {
-                val coord = rightHalf.getPhysicalCoordinate(r, c)
-                val isHome = (r == rightHalf.homeRowIndex && c in rightHomeRange)
-                drawKey(rightStartX + (coord.x - rightMinX), coord.y - globalMinY, rightEffort[r][c], isHome)
+                if (rightEffort[r][c] < 99.0) { // CSAK AZ ÉRVÉNYES GOMBOKAT RAJZOLJUK
+                    val coord = rightHalf.getPhysicalCoordinate(r, c)
+                    val isHome = (r == rightHalf.homeRowIndex && c in rightHomeRange)
+                    drawKey(rightStartX + (coord.x - rightMinX), coord.y - globalMinY, rightEffort[r][c], isHome)
+                }
             }
         }
 

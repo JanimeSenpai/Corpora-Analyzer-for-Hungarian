@@ -6,11 +6,13 @@ import EffortModel.Finger
 import EffortModel.Hand
 import EffortModel.KeyboardHalf
 import EffortModel.StaggerType
+import keyboard_analysis.LayoutParser
+import java.io.File
 
 //The purpose of these functions is to test the Effort layout generation and rendering of effort heatmaps.
 //physical hardware is stored along the layouts so in general use these functions are not going to be used
 fun main() {
-    standardKeyboardTest()
+    testLtsnErgoHeatmapRendering()
 }
 fun standardKeyboardTest(){
     // Standard ISO/ANSI sor-eltolások az alapsorhoz (2. index) képest:
@@ -171,4 +173,82 @@ fun testMyCustomColStaggerKeyboard() {
         outputPath = "my_colstagger_heatmap.png"
     )
     println("A saját billentyűzet hőtérképe legenerálva: my_colstagger_heatmap.png")
+}
+
+fun testLtsnErgoHeatmapRendering() {
+    val layoutName = "ltsn_ergo.yaml"
+    val layoutFile = File("keyboards/$layoutName")
+
+    assert(layoutFile.exists()) { "Hiba: A fájl nem található: ${layoutFile.absolutePath}" }
+
+    // 1. Layout betöltése az új, thumb-key barát parserünkkel
+    val layoutData = LayoutParser.parseLayout(layoutFile)
+    val hw = layoutData.hardwareYaml
+
+    // 2. Szükséges konfigurációk visszakonvertálása a renderelő által várt típusokra
+    val stagger = when (hw.staggerType.lowercase()) {
+        "columnar_stagger" -> StaggerType.COLUMNAR_STAGGER
+        "row_stagger" -> StaggerType.ROW_STAGGER
+        else -> StaggerType.MATRIX
+    }
+
+    // Figyelem: A numRows itt a fizikai sorok száma (6)
+    val leftHalf = KeyboardHalf(Hand.LEFT, stagger, hw.numRows, hw.left.offsets.size, hw.left.offsets, hw.homeRowIndex)
+    val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, hw.right.offsets.size, hw.right.offsets, hw.homeRowIndex)
+
+    val leftConfigs = hw.left.fingers.indices.map { i ->
+        ColumnConfig(colIndex = i, anchorColIndex = hw.left.anchors[i], finger = parseFingerForTest(hw.left.fingers[i]))
+    }
+    val rightConfigs = hw.right.fingers.indices.map { i ->
+        ColumnConfig(colIndex = i, anchorColIndex = hw.right.anchors[i], finger = parseFingerForTest(hw.right.fingers[i]))
+    }
+
+    // 3. Adapter a Rongyos Tömbhöz (Padding a renderelő miatt)
+    val cols = leftHalf.numColumns // Pl. 8
+
+    // A bal hüvelykujj fizikai oszlopát keressük (hova rajzolja a renderelő a gombot)
+    val leftThumbCol = hw.left.fingers.indexOfFirst { it.equals("T", true) }.takeIf { it >= 0 } ?: (cols - 1)
+    val rightThumbCol = hw.right.fingers.indexOfFirst { it.equals("T", true) }.takeIf { it >= 0 } ?: 0
+
+    val paddedLeftEffort = layoutData.leftEffortMatrix.mapIndexed { r, row ->
+        if (r == hw.numRows - 1) { // Ha a hüvelykujj sora
+            // row[0] helyett row[leftThumbCol]-t kérünk!
+            List(cols) { c -> if (c == leftThumbCol) row[leftThumbCol] else 99.9 }
+        } else {
+            row.toList()
+        }
+    }
+
+    val paddedRightEffort = layoutData.rightEffortMatrix.mapIndexed { r, row ->
+        if (r == hw.numRows - 1) {
+            // row[0] helyett row[rightThumbCol]-t kérünk!
+            List(cols) { c -> if (c == rightThumbCol) row[rightThumbCol] else 99.9 }
+        } else {
+            row.toList()
+        }
+    }
+
+    println("=== Heatmap renderelés indítása: LTSN_Ergo ===")
+
+    // 4. A renderelő meghívása a vasalt (padded) mátrixokkal
+    EffortHeatmapRenderer.renderFullKeyboard(
+        leftHalf = leftHalf,
+        rightHalf = rightHalf,
+        leftEffort = paddedLeftEffort,
+        rightEffort = paddedRightEffort,
+        leftcolumnConfig = leftConfigs,
+        rightcolumnConfig = rightConfigs,
+        outputPath = "ltsn_ergo_heatmap.png"
+    )
+    println("A billentyűzet hőtérképe legenerálva: ltsn_ergo_heatmap.png")
+}
+
+// Segédfüggvény a teszthez a string -> Finger konverzióra
+private fun parseFingerForTest(code: String): Finger = when (code.uppercase()) {
+    "P" -> Finger.PINKY
+    "R" -> Finger.RING
+    "M" -> Finger.MIDDLE
+    "I" -> Finger.INDEX
+    "T" -> Finger.THUMB
+    else -> throw IllegalArgumentException("Ismeretlen ujj kód: $code")
 }

@@ -26,7 +26,9 @@ class CustomKeyboardEffortGenerator(
         anchorColIndex: Int,
         finger: Finger
     ): Double {
-        val anchorCenter = keyboardHalf.getPhysicalCoordinate(keyboardHalf.homeRowIndex, anchorColIndex)
+        // MEGOLDÁS 1: A hüvelykujj horgonypontja a legalsó sor, minden más ujjé a homeRowIndex
+        val anchorRow = if (finger == Finger.THUMB) (keyboardHalf.numRows - 1) else keyboardHalf.homeRowIndex
+        val anchorCenter = keyboardHalf.getPhysicalCoordinate(anchorRow, anchorColIndex)
 
         val xSign = if (keyboardHalf.hand == Hand.LEFT) 1.0 else -1.0
         val homeX = anchorCenter.x + if (applyStaticFingerOffsets) (finger.homeOffsetX * xSign) else 0.0
@@ -61,6 +63,14 @@ class CustomKeyboardEffortGenerator(
 
     fun calculateEffort(targetRow: Int, targetCol: Int): Double {
         val targetCenter = keyboardHalf.getPhysicalCoordinate(targetRow, targetCol)
+
+        // MEGOLDÁS 2: Ha a hüvelykujj sorát (legalsó sort) vizsgáljuk, kikényszerítjük a hüvelykujj használatát
+        if (targetRow == keyboardHalf.numRows - 1) {
+            val thumbAnchorCol = columnConfigs.find { it.finger == Finger.THUMB }?.anchorColIndex
+                ?: if (keyboardHalf.hand == Hand.LEFT) (keyboardHalf.numColumns - 1) else 0
+
+            return calculateEffortForFinger(targetCenter, thumbAnchorCol, Finger.THUMB)
+        }
 
         return if (useOptimalFingerAssignment) {
             handFingers.minOf { (anchorCol, finger) ->

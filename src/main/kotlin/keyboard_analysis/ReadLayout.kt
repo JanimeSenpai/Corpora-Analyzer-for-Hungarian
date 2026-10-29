@@ -154,17 +154,17 @@ class CombinedLayoutData(
             for (c in leftChars[r].indices) { //minden egyes oszlopra bal kézen
                 val ch = leftChars[r][c] //vesszük az adott koordinátán levő karaktert
                 if (ch != '_') {
-                    val physCol = if (r == numRows - 1) leftThumbPhysicalCol else c
-                    val fingerKey = "L_${hardwareYaml.left.fingers[physCol]}" //legyen a fingerkey L_ujj
-                    val set = fingerMap.getOrPut(fingerKey) { HashSet() } //ha van már L_ujj a fingermapben, akkor az lesz a set változó, ha nincs, létrehozzuk
-                    set.add(ch) //belerakjuk az ujjhoz tartozó halmazba
+                    // Anatómiai ujj direkthezrendelése az SFB miatt
+                    val fingerKey = if (r == numRows - 1) "L_T" else "L_${hardwareYaml.left.fingers[c]}"
+                    val set = fingerMap.getOrPut(fingerKey) { HashSet() }
+                    set.add(ch)
                 }
             }
             for (c in rightChars[r].indices) {
                 val ch = rightChars[r][c]
                 if (ch != '_') {
-                    val physCol = if (r == numRows - 1) rightThumbPhysicalCol else c
-                    val fingerKey = "R_${hardwareYaml.right.fingers[physCol]}"
+                    // Anatómiai ujj direkthezrendelése az SFB miatt
+                    val fingerKey = if (r == numRows - 1) "R_T" else "R_${hardwareYaml.right.fingers[c]}"
                     val set = fingerMap.getOrPut(fingerKey) { HashSet() }
                     set.add(ch)
                 }

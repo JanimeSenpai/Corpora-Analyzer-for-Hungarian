@@ -143,7 +143,7 @@ fun completeLayoutAnalysis(
         rightPinkyChars = rightPinkyChars,
         leftPinkyHomeChar = leftPinkyHomeChar,
         rightPinkyHomeChar = rightPinkyHomeChar,
-        letters = corpusData.letters, // A szóköz nélküli arányok
+        letters = corpusData.spaceincludedletters, // eredetileg így mértük, egyelőre marad
         verbose = verbose,
         layoutName = layoutData.name,
         datasetName = corpusData.datasetName
