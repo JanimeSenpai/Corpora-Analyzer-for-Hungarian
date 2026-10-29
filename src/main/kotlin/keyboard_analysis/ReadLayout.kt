@@ -10,7 +10,9 @@ import java.io.File
 data class KeyboardConfigYaml(
     @JsonProperty("name") val name: String = "Unknown",
     @JsonProperty("hardware") val hardware: HardwareYaml,
-    @JsonProperty("matrix") val matrix: String
+    @JsonProperty("matrix") val matrix: String,
+    @JsonProperty("thumb_left") val thumbLeft: String = "_",
+    @JsonProperty("thumb_right") val thumbRight: String = "_"
 )
 
 data class HardwareYaml(
@@ -40,13 +42,67 @@ class CombinedLayoutData(
     val numRows: Int get() = hardwareYaml.numRows
     val homeRowIndex: Int get() = hardwareYaml.homeRowIndex
 
+    // A fizikai oszlop indexének megkeresése a hüvelykujjhoz
+    private val leftThumbPhysicalCol = hardwareYaml.left.fingers.indexOfFirst { it.equals("T", true) }.takeIf { it >= 0 } ?: (hardwareYaml.left.fingers.size - 1)
+    private val rightThumbPhysicalCol = hardwareYaml.right.fingers.indexOfFirst { it.equals("T", true) }.takeIf { it >= 0 } ?: 0
+
     // Gyors csere művelet a Simulated Annealing számára
-    fun swapKeys(left1: Boolean, r1: Int, c1: Int, left2: Boolean, r2: Int, c2: Int) {
+    fun swapKeys(left1: Boolean, r1: Int, c1: Int, left2: Boolean, r2: Int, c2: Int):Boolean {
         val grid1 = if (left1) leftChars else rightChars
         val grid2 = if (left2) leftChars else rightChars
         val temp = grid1[r1][c1]
         grid1[r1][c1] = grid2[r2][c2]
         grid2[r2][c2] = temp
+        return true
+    }
+
+    // 1. Oszlopcsere (üres cellákkal együtt, Thumb key-ek kihagyásával)
+    fun swapColumns(left1: Boolean, col1: Int, left2: Boolean, col2: Int): Boolean {
+        val grid1 = if (left1) leftChars else rightChars
+        val grid2 = if (left2) leftChars else rightChars
+        val thumbRow = numRows - 1
+
+        for (r in 0 until thumbRow) {
+            val temp = grid1[r][col1]
+            grid1[r][col1] = grid2[r][col2]
+            grid2[r][col2] = temp
+        }
+        return true
+    }
+
+    // 2. Helyi Sorcsere (üres cellákkal együtt, Thumb sor kizárva)
+    fun swapRowsLocal(isLeft: Boolean, row1: Int, row2: Int): Boolean {
+        val thumbRow = numRows - 1
+        if (row1 == thumbRow || row2 == thumbRow) return false
+
+        val grid = if (isLeft) leftChars else rightChars
+
+        for (c in grid[row1].indices) {
+            val temp = grid[row1][c]
+            grid[row1][c] = grid[row2][c]
+            grid[row2][c] = temp
+        }
+        return true
+    }
+
+    // 3. Globális Sorcsere (üres cellákkal együtt, Thumb sor kizárva)
+    fun swapRowsGlobal(row1: Int, row2: Int): Boolean {
+        val thumbRow = numRows - 1
+        if (row1 == thumbRow || row2 == thumbRow) return false
+
+        swapRowsLocal(true, row1, row2)
+        swapRowsLocal(false, row1, row2)
+        return true
+    }
+
+    // 4. Kézen belüli tükrözés (üres cellákkal együtt, Thumb sor kihagyásával)
+    fun mirrorHand(isLeft: Boolean) {
+        val grid = if (isLeft) leftChars else rightChars
+        val thumbRow = numRows - 1
+
+        for (r in 0 until thumbRow) {
+            grid[r].reverse()
+        }
     }
 
     // Mélymásolat készítése, ha az SA el akarja menteni az eddigi legjobb állapotot
@@ -67,11 +123,17 @@ class CombinedLayoutData(
         for (r in 0 until numRows) {
             for (c in leftChars[r].indices) {
                 val ch = leftChars[r][c]
-                if (ch != '_') map[ch] = leftEffortMatrix[r][c]
+                if (ch != '_') {
+                    val physCol = if (r == numRows - 1) leftThumbPhysicalCol else c
+                    map[ch] = leftEffortMatrix[r][physCol]
+                }
             }
             for (c in rightChars[r].indices) {
                 val ch = rightChars[r][c]
-                if (ch != '_') map[ch] = rightEffortMatrix[r][c]
+                if (ch != '_') {
+                    val physCol = if (r == numRows - 1) rightThumbPhysicalCol else c
+                    map[ch] = rightEffortMatrix[r][physCol]
+                }
             }
         }
         return map
@@ -88,23 +150,26 @@ class CombinedLayoutData(
     fun getFingerCharacterSets(): Map<String, Set<Char>> {
         val fingerMap = HashMap<String, MutableSet<Char>>()
 
-        for (c in hardwareYaml.left.fingers.indices) {  //minden egyes oszlopra bal kézen
-            val fingerKey = "L_${hardwareYaml.left.fingers[c]}" //legyen a fingerkey L_ujj
-            val set = fingerMap.getOrPut(fingerKey) { HashSet() }  //ha van már L_ujj a fingermapben, akkor az lesz a set változó, ha nincs, létrehozzuk
-            for (r in 0 until numRows) { //az r változó segítségével megyünk lefele végig az egész oszlopon
-                val ch = leftChars[r][c]  //vesszük az adott koordinátán levő karaktert
-                if (ch != '_') set.add(ch) //belerakjuk az ujjhoz tartozó halmazba
+        for (r in 0 until numRows) { //az r változó segítségével megyünk lefele végig az egész oszlopon
+            for (c in leftChars[r].indices) { //minden egyes oszlopra bal kézen
+                val ch = leftChars[r][c] //vesszük az adott koordinátán levő karaktert
+                if (ch != '_') {
+                    val physCol = if (r == numRows - 1) leftThumbPhysicalCol else c
+                    val fingerKey = "L_${hardwareYaml.left.fingers[physCol]}" //legyen a fingerkey L_ujj
+                    val set = fingerMap.getOrPut(fingerKey) { HashSet() } //ha van már L_ujj a fingermapben, akkor az lesz a set változó, ha nincs, létrehozzuk
+                    set.add(ch) //belerakjuk az ujjhoz tartozó halmazba
+                }
             }
-        }
-        for (c in hardwareYaml.right.fingers.indices) {
-            val fingerKey = "R_${hardwareYaml.right.fingers[c]}"
-            val set = fingerMap.getOrPut(fingerKey) { HashSet() }
-            for (r in 0 until numRows) {
+            for (c in rightChars[r].indices) {
                 val ch = rightChars[r][c]
-                if (ch != '_') set.add(ch)
+                if (ch != '_') {
+                    val physCol = if (r == numRows - 1) rightThumbPhysicalCol else c
+                    val fingerKey = "R_${hardwareYaml.right.fingers[physCol]}"
+                    val set = fingerMap.getOrPut(fingerKey) { HashSet() }
+                    set.add(ch)
+                }
             }
         }
-
         return fingerMap
     }
 }
@@ -128,7 +193,7 @@ object LayoutParser {
         val rightHalf = KeyboardHalf(Hand.RIGHT, stagger, hw.numRows, hw.right.offsets.size, hw.right.offsets, hw.homeRowIndex)
 
         // Javítva: A ColumnConfig most a megfelelő 3 paramétert kapja: colIndex, anchorColIndex, finger.
-        // A hw.left.fingers mérete adja az oszlopok számát.  Végigmegyünk az indexeken, hogy
+        // A hw.left.fingers mérete adja az oszlopok számát. Végigmegyünk az indexeken, hogy
         // a colIndex meglegyen.
         val leftConfigs = hw.left.fingers.indices.map { i ->
             ColumnConfig(
@@ -167,8 +232,9 @@ object LayoutParser {
 
         // --- ÚJ, JAVÍTOTT BEOLVASÁS ---
         val matrixLines = config.matrix.trim().lines().filter { it.isNotBlank() }
+        val mainRows = hw.numRows - 1
 
-        for (r in 0 until minOf(hw.numRows, matrixLines.size)) {
+        for (r in 0 until minOf(mainRows, matrixLines.size)) {
             // Eltávolítjuk az összes szóközt a sorból (pl. "___ _ _ ___   ___ _ w xq_" -> "________wxq_")
             val cleanLine = matrixLines[r].replace(Regex("\\s+"), "")
 
@@ -181,6 +247,11 @@ object LayoutParser {
             for (c in 0 until minOf(leftCols, leftString.length)) leftChars[r][c] = leftString[c]
             for (c in 0 until minOf(rightCols, rightString.length)) rightChars[r][c] = rightString[c]
         }
+
+        // Thumb sor beolvasása közvetlenül a stringekből (1 karakteres méretű tömb)
+        val thumbRowIdx = hw.numRows - 1
+        leftChars[thumbRowIdx] = charArrayOf(config.thumbLeft.firstOrNull() ?: '_')
+        rightChars[thumbRowIdx] = charArrayOf(config.thumbRight.firstOrNull() ?: '_')
 
         return CombinedLayoutData(config.name, hw, leftEffort, rightEffort, leftChars, rightChars)
     }

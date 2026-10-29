@@ -18,6 +18,7 @@ import keyboard_analysis.launchRollAnalysis
 import keyboard_analysis.launchRowUsageAnalysis
 import keyboard_analysis.launchSimpleSfbAnalysis
 import keyboard_analysis.launchSpaceSfs1Analysis
+import keyboard_analysis.layoutSandbox
 import kotlin.system.exitProcess
 
 fun main() {
@@ -77,6 +78,7 @@ fun readcommands(){
             "gcsv" -> launchGenerateSummaryCsv()
             "po" -> launchPinkyOffAnalysis()
             "pinky off" -> launchPinkyOffAnalysis()
+            "layoutsandbox" -> layoutSandbox()
             "exit"-> exitProcess(0)
         }
 
