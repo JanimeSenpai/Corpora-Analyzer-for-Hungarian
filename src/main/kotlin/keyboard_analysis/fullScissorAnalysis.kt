@@ -1,18 +1,63 @@
 package keyboard_analysis
 
+import java.io.File
+
+
+fun launchFullScissorAnalysis() {
+    println("Kérem az elemzendő billentyűzetkiosztás nevét (a keyboards mappából):")
+    var layoutName = readln().trim()
+    if (!layoutName.endsWith(".yaml")) layoutName += ".yaml"
+
+    val layoutFile = File("keyboards/$layoutName")
+    if (!layoutFile.exists()) {
+        println("Hiba: A billentyűzet fájl nem található ($layoutFile).")
+        return
+    }
+
+    println("Kérem az adathalmaz nevét (pontosan úgy, ahogy a mappa neve szerepel, pl. 'szoveg.txt'):")
+    var datasetName = readln().trim()
+    if (!datasetName.endsWith(".txt")) datasetName += ".txt"
+
+    val layoutData = try {
+        LayoutParser.parseLayout(layoutFile)
+    } catch (e: Exception) {
+        println("Hiba a billentyűzet beolvasásakor: ${e.message}")
+        return
+    }
+
+    val corpusData = CorpusData.loadFromDataset(datasetName)
+    if (corpusData.bigrams.isEmpty()) {
+        println("Hiba: A bigram gyakorisági adatok nem töltődtek be.")
+        return
+    }
+
+    // 1. Kéz, Ujj és Koordináta hozzárendelés feltérképezése
+    val charToPos = buildCharPositionMap(layoutData)
+
+    fullScissorAnalysis(
+        charPositions = charToPos,
+        bigrams = corpusData.bigrams,
+        verbose = true,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName
+    )
+}
+
 fun fullScissorAnalysis(
     charPositions: Map<Char, KeyPosition>,
-    bigrams: Map<String, Long>,
-    verbose: Boolean
+    bigrams: Map<String, Double>, // <-- JAVÍTVA: Long helyett Double
+    verbose: Boolean,
+    layoutName: String = "",      // <-- JAVÍTVA: Hozzáadva a launcher miatt
+    datasetName: String = ""      // <-- JAVÍTVA: Hozzáadva a launcher miatt
 ): Double {
-    var scissorCount = 0L
-    var totalBigrams = 0L
+    if (verbose) println("Full Scissor Bigrams (FSB) elemzése folyamatban...")
 
-    for ((bigram, freq) in bigrams) {
+    var totalScissor = 0.0 // <-- JAVÍTVA: Long helyett Double, és csak ezt adjuk össze
+
+    for ((bigram, percentage) in bigrams) { // freq helyett percentage
         if (bigram.length != 2) continue
         val p1 = charPositions[bigram[0]] ?: continue
         val p2 = charPositions[bigram[1]] ?: continue
-        totalBigrams += freq
 
         // Azonos kéz, különböző ujjak, hüvelykujjat (finger == 4 vagy 5) kihagyjuk
         if (p1.hand == p2.hand && p1.finger != p2.finger && p1.finger != 4 && p1.finger != 5 && p2.finger != 4 && p2.finger != 5) {
@@ -22,8 +67,6 @@ fun fullScissorAnalysis(
                 val higherPos = if (p1.row < p2.row) p1 else p2
 
                 // Normalizáljuk az ujjindexet kéztől függetlenül, hogy 0-tól (kisujj) 3-ig (mutató) fusson
-                // Bal kéz: 0=P, 1=R, 2=M, 3=I
-                // Jobb kéz: 9=P, 8=R, 7=M, 6=I
                 val fLower = if (lowerPos.hand == 0) lowerPos.finger else 9 - lowerPos.finger
                 val fHigher = if (higherPos.hand == 0) higherPos.finger else 9 - higherPos.finger
 
@@ -35,11 +78,29 @@ fun fullScissorAnalysis(
                     0 -> fHigher == 2 || fHigher == 1//kisujj lent keyboard layout doc szerint csak a magas mutatóujj büntetendő itt, de nekem pont az elviselhető, a több meg nem szeretem//fHigher == 3 || fHigher == 1 // Kisujj lent -> Csak I és R ellen büntetendő
                     else -> false // Mutatóujj lent (fLower == 3) -> Sosem büntetendő
                 }
-                if (isScissor) scissorCount += freq
+
+                if (isScissor) totalScissor += percentage // Közvetlenül a százalékot adjuk hozzá
             }
         }
     }
-    val percentage = if (totalBigrams > 0) (scissorCount.toDouble() / totalBigrams) * 100.0 else 0.0
-    if (verbose) println("Full Scissor Bigrams (FSB): ${String.format("%.3f", percentage)}%")
-    return percentage
+
+    // Fájlba és konzolra írás, ha a verbose be van kapcsolva és kaptunk neveket
+    if (verbose) {
+        if (layoutName.isNotEmpty() && datasetName.isNotEmpty()) {
+            val resultDir = java.io.File("analysis_results/$datasetName/$layoutName")
+            resultDir.mkdirs()
+            val outputFile = java.io.File(resultDir, "full_scissor_analyzed.txt")
+
+            outputFile.bufferedWriter().use { writer ->
+                writer.write("Teljes Full Scissor (FSB): %.4f%%".format(totalScissor))
+                writer.newLine()
+            }
+            // saveRawMetric(datasetName, layoutName, "full_scissor_total", totalScissor)
+            println("Sikeresen végrehajtva: ${outputFile.path} létrehozva. (FSB: %.4f%%)".format(totalScissor))
+        } else {
+            println("Full Scissor Bigrams (FSB): ${String.format("%.3f", totalScissor)}%")
+        }
+    }
+
+    return totalScissor
 }

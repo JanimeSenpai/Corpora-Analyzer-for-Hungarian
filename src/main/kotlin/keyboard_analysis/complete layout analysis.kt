@@ -17,7 +17,9 @@ data class LayoutAnalysisResult(
     val rollPercentage: Double, // 2-1 és 1-2 együtt
     val threerollPercentage: Double,
     val redirectPercentage: Double,
-    val spaceSfs1Penalty: Double
+    val spaceSfs1Penalty: Double,
+    val lateralStretchPercentage: Double,
+    val fullScissorPercentage: Double,
 )
 
 // 1. KONZOLOS INDÍTÓ FÜGGVÉNY (Egyszeri futás)
@@ -229,8 +231,10 @@ fun completeLayoutAnalysis(
     if (verbose) println("--------------------------------------------------")
     val spaceSfs1Penalty = spaceSfs1Analysis(layoutData, corpusData, verbose)
 
+    val charToPos = buildCharPositionMap(layoutData)
+    val lateralStretchPercentage = lateralStretchAnalysis(charToPos,corpusData.bigrams,verbose)
 
-
+    val fullScissorPercentage = fullScissorAnalysis(charToPos,corpusData.bigrams,verbose)
 // Előzetes eredményobjektum összeállítása
     val preliminaryResult = LayoutAnalysisResult(
         layoutName = layoutData.name,
@@ -246,7 +250,9 @@ fun completeLayoutAnalysis(
         rollPercentage = rollPercentage,
         threerollPercentage = threeRollPercentage,
         redirectPercentage = redirectPercentage,
-        spaceSfs1Penalty = spaceSfs1Penalty
+        spaceSfs1Penalty = spaceSfs1Penalty,
+        lateralStretchPercentage = lateralStretchPercentage,
+        fullScissorPercentage = fullScissorPercentage,
     )
 
     val totalEffort = calculateTotalEffort(preliminaryResult)

@@ -14,21 +14,34 @@ import kotlin.random.Random
  * Kiszámítja a billentyűzetkiosztás összesített jósági/terhelési mutatóját (Célfüggvény).
  * Minél KISEBB a visszaadott érték, annál jobb a kiosztás.
  */
+/**
+ * Kiszámítja a billentyűzetkiosztás összesített jósági/terhelési mutatóját (Célfüggvény).
+ * Minél KISEBB a visszaadott érték, annál jobb a kiosztás.
+ */
 fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
-    //az lesz a nagyon érdekes, hogy milyen arányban és súlyokkal vesszük figyelembe az összes eddigi paramétert, hogy aztán egy darab végső szám formájában jellemezzük az egész billentyűzetet betűelrendezéssel, fizikai kialakítással mindennel együtt
-    //TODO
 
     // --- 1. BÜNTETŐ SÚLYOK (Minimalizálandó értékek -> növelik a Total Effortot) ---
     val weightCharReachEffort = 40.0
     val weightHandImbalance = 0.5
-    val weightPinkyOff = 1.5
-    val weightSfb = 3.0
-    val weightRedirect = 1.2
+
+    // Cél: < 4-6%
+    val weightPinkyOff = 3.0
+
+    // Cél: < 1-1.5%
+    val weightSfb = 10.0
+
+    // Cél: < 0.5% (ÚJ)
+    val weightFullScissor = 15.0
+
+    // Cél: < 1.5-2% (ÚJ)
+    val weightLateralStretch = 8.0
+
+    // Cél: < 2-3%
+    val weightRedirect = 2.0
+
     val weightSpaceSfs1 = 2.0
 
     // Soronkénti terhelés súlyai (0: legfelső sor ... 5: thumb sor)
-    // Ha a charReachEffort már tartalmazza a sorok távolságát, ezt 0.0-n is hagyhatod,
-    // vagy adhatsz külön büntetést a szélső soroknak.
     val weightRow0 = 5.0
     val weightRow1 = 3.0
     val weightRow2 = 0.0
@@ -37,13 +50,15 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightRow5 = 0.0 // Thumb row
 
     // --- 2. JUTALMAZÓ SÚLYOK (Maximalizálandó értékek -> csökkentik a Total Effortot) ---
-    val weightHomeRow = 0.5
-    val weightAlternation = 0.3
-    val weightRoll = 0.4
-    val weightThreeRoll = 0.6
+    val weightHomeRow = 1.0
+
+    // Cél: minél magasabb, együttesen > 40-50%
+    val weightAlternation = 1.0
+    val weightRoll = 1.0
+    val weightThreeRoll = 1.5
 
     // Kéz-aszimmetria kiszámítása: |bal% - jobb%|
-    val handImbalance = abs(result.handBalanceLeft - result.handBalanceRight)
+    val handImbalance = kotlin.math.abs(result.handBalanceLeft - result.handBalanceRight)
 
     // Sorok súlyozott összege (index-biztos lekéréssel, ha változna a sorok száma)
     val rowPenalty =
@@ -54,12 +69,14 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
                 (result.rowPercentages.getOrElse(4) { 0.0 } * weightRow4) +
                 (result.rowPercentages.getOrElse(5) { 0.0 } * weightRow5)
 
-    // Büntetések összege
+    // Büntetések összege (beleértve a két új metrikát)
     val penalties =
         (result.charReachEffort * weightCharReachEffort) +
                 (handImbalance * weightHandImbalance) +
                 (result.pinkyOffPercentage * weightPinkyOff) +
                 (result.sfbPercentage * weightSfb) +
+                (result.fullScissorPercentage * weightFullScissor) +
+                (result.lateralStretchPercentage * weightLateralStretch) +
                 (result.redirectPercentage * weightRedirect) +
                 (result.spaceSfs1Penalty * weightSpaceSfs1) +
                 rowPenalty
