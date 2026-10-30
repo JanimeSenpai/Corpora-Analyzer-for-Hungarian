@@ -14,7 +14,7 @@ import renderCharEffortlayout
 import java.io.File
 
 fun main(){
-    parallelimprovementTest()
+    parallelimprovementTest(25)
 }
 
 fun improvementTest (){
@@ -93,9 +93,9 @@ fun longerimprovementTest(runs:Int=15) {
 
 
 // A runBlocking összeköti a hagyományos szinkron kódot a korutinok világával
-fun parallelimprovementTest(runs:Int = 25) = runBlocking {
+fun parallelimprovementTest(runs:Int = 25, keyboardname:String="qwertzcolstag") = runBlocking {
     val initialLayout = try {
-        LayoutParser.parseLayout(File("keyboards/ltsnergomini.yaml"))
+        LayoutParser.parseLayout(File("keyboards/${keyboardname}.yaml"))
     } catch (e: Exception) {
         println("Hiba a beolvasáskor: ${e.message}")
         return@runBlocking

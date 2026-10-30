@@ -59,14 +59,16 @@ class CustomKeyboardEffortGenerator(
 
         // Újdonság a colemakdh effort számításhoz képest: Biomechanikai fal a túl rövid ujjak miatt
         // Csak a függőleges nyújtózást (Y) nézzük, mert az ujj ott fogy el
-        val overreach = max(0.0, distY - finger.maxComfortReachY)
+        val overreachy = max(0.0, distY - finger.maxComfortReachY)
+        val overreachx = max(0.0, distX - finger.maxComfortReachX)
 
         // Ha túllépi a határt, hatványozottan drágul (pl. 3. hatvány).
         // A 10.0 egy szorzó, amit feljebb vihetsz, ha még "keményebb" falat akarsz.
-        val biomechanicalWall = Math.pow(overreach, 3.0) * 25.0
+        val biomechanicalWallY = Math.pow(overreachy, 3.0) * 25.0
+        val biomechanicalWallX = Math.pow(overreachx, 3.0) * 5.5
 
         val pf = finger.baseEffort
-        return pf + hypot(pf * fY, lateralPenaltyPx * fX)+ biomechanicalWall
+        return pf + hypot(pf * fY, lateralPenaltyPx * fX)+ biomechanicalWallY+biomechanicalWallX
     }
 
     fun calculateEffort(targetRow: Int, targetCol: Int): Double {

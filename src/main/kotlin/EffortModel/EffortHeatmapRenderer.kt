@@ -28,6 +28,9 @@ object EffortHeatmapRenderer {
         val margin = 40
         val splitGap = 1.5
 
+        val effortlimit = 99.0  //todo ez 99 volt eddig
+        val colorlimit =10.0//ezt azért adtam hozzá, hogy ne 1..99 skálán normálja a piros színt, hanem max addig amíg tényleg vannak értékeink
+
         val leftCoords = (0 until leftHalf.numRows).flatMap { r ->
             (0 until leftHalf.numColumns).map { c -> leftHalf.getPhysicalCoordinate(r, c) }
         }
@@ -45,7 +48,7 @@ object EffortHeatmapRenderer {
 
         val allEfforts = leftEffort.flatten() + rightEffort.flatten()
         // Az effort < 99.0 szűrő biztosítja, hogy a dummy értékeket ne vegyük bele a színskálába
-        val validEfforts = allEfforts.filter { it < 99.0 }
+        val validEfforts = allEfforts.filter { it < colorlimit }//a colorlimit pedig a kiugró értékeket szűri ki
         val minEffort = 1.0
         val maxEffort = max(validEfforts.maxOrNull() ?: 5.0, 4.5)
 
@@ -130,7 +133,7 @@ object EffortHeatmapRenderer {
         // Bal kéz kirajzolása (Karakterek biztonságos lekérésével)
         for (r in 0 until leftHalf.numRows) {
             for (c in 0 until leftHalf.numColumns) {
-                if (leftEffort[r][c] < 99.0) { // Biztonsági szűrés a dummy (rongyos tömbös) gombokra
+                if (leftEffort[r][c] < effortlimit) { // Biztonsági szűrés a dummy (rongyos tömbös) gombokra
                     val coord = leftHalf.getPhysicalCoordinate(r, c)
                     val isHome = (r == leftHalf.homeRowIndex && c in leftHomeRange)
                     val charToDraw = if (leftChars != null && r < leftChars.size && c < leftChars[r].size) leftChars[r][c] else null
@@ -142,7 +145,7 @@ object EffortHeatmapRenderer {
         // Jobb kéz kirajzolása
         for (r in 0 until rightHalf.numRows) {
             for (c in 0 until rightHalf.numColumns) {
-                if (rightEffort[r][c] < 99.0) {
+                if (rightEffort[r][c] < effortlimit) {
                     val coord = rightHalf.getPhysicalCoordinate(r, c)
                     val isHome = (r == rightHalf.homeRowIndex && c in rightHomeRange)
                     val charToDraw = if (rightChars != null && r < rightChars.size && c < rightChars[r].size) rightChars[r][c] else null

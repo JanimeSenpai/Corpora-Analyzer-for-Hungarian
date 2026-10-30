@@ -28,11 +28,11 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightPinkyOff = 5.0
 
     // Cél: < 1-1.5%
-    val weightSfb = 10.0
+    val weightSfb = 10.0  //original 10
 
     // Cél: < 0.5% (ÚJ)
-    val weightFullScissor = 15.0
-    val weightHalfScissor = weightFullScissor/2
+    val weightFullScissor = 15.0  //original 15
+    val weightHalfScissor = weightFullScissor/2 //original :2
 
     // Cél: < 1.5-2% (ÚJ)
     val weightLateralStretch = 8.0
@@ -45,8 +45,9 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightGravity = 0.5
 
     // Soronkénti terhelés súlyai (0: legfelső sor ... 5: thumb sor)
-    val weightRow0 = 16.0
-    val weightRow1 = 15.0
+    //TODO megvalósítani, hogy magától tudja a program, hogy hány soros ez a billentyűzet és annak függvényében kiosztani ezeket a büntetőpontokat
+    val weightRow0 = 2.0
+    val weightRow1 = 0
     val weightRow2 = 0.0
     val weightRow3 = 0.0 // Home row (ezt külön jutalmazzuk lent)
     val weightRow4 = 0.0
@@ -88,7 +89,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     // Jutalmak összege
     val rewards =
-        (result.homeRowPercentage * weightHomeRow) +
+        (result.homeRowPercentage * weightHomeRow) +//ezt mindig jól adjuk hozzá
                 (result.alternationPercentage * weightAlternation) +
                 (result.rollPercentage * weightRoll) +
                 (result.threerollPercentage * weightThreeRoll)
