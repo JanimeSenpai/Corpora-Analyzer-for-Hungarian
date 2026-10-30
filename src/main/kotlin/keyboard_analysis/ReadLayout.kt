@@ -19,7 +19,7 @@ data class HardwareYaml(
     @JsonProperty("stagger_type") val staggerType: String,
     @JsonProperty("num_rows") val numRows: Int,
     @JsonProperty("home_row_index") val homeRowIndex: Int,
-    @JsonProperty("optimal_finger_assignment") val optimalFingerAssignment: Boolean = true,
+    @JsonProperty("optimal_finger_assignment") val optimalFingerAssignment: Boolean = false,//minden billentyűt mi mondunk meg melyik ujj üssön le
     @JsonProperty("angle_of_approach_degrees") val angleOfApproachDegrees: Double = 10.0,
     @JsonProperty("left") val left: HardwareHalfYaml,
     @JsonProperty("right") val right: HardwareHalfYaml

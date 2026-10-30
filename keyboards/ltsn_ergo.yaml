@@ -4,7 +4,7 @@ hardware:
   stagger_type: "columnar_stagger" # "row_stagger" or "columnar_stagger"
   num_rows: 6 #thumb row also counts
   home_row_index: 3
-  optimal_finger_assignment: true
+  optimal_finger_assignment: false
   angle_of_approach_degrees: 0.0
   left:
     offsets: [0.50, 0.50, 0.50, 0.25, 0.00, 0.25, 0.38, 0.10]

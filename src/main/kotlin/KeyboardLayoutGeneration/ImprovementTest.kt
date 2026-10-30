@@ -93,7 +93,7 @@ fun longerimprovementTest(runs:Int=15) {
 
 
 // A runBlocking összeköti a hagyományos szinkron kódot a korutinok világával
-fun parallelimprovementTest(runs:Int = 25, keyboardname:String="qwertzcolstag") = runBlocking {
+fun parallelimprovementTest(runs:Int = 25, keyboardname:String="ltsnergomini") = runBlocking {
     val initialLayout = try {
         LayoutParser.parseLayout(File("keyboards/${keyboardname}.yaml"))
     } catch (e: Exception) {

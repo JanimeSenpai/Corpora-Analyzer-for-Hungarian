@@ -3,7 +3,7 @@ hardware:
   stagger_type: "row_stagger" # Átállítva sor-eltolásosra
   num_rows: 6
   home_row_index: 3
-  optimal_finger_assignment: true
+  optimal_finger_assignment: false
   angle_of_approach_degrees: 0.0
   left:
     offsets: [0.0, -0.25,-0.25, 0.0, -0.5] # Sorok eltolása (0., 1., 2., 3. sor)
