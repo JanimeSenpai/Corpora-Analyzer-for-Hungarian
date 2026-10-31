@@ -47,7 +47,8 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     // Soronkénti terhelés súlyai (0: legfelső sor ... 5: thumb sor)
     //TODO megvalósítani, hogy magától tudja a program, hogy hány soros ez a billentyűzet és annak függvényében kiosztani ezeket a büntetőpontokat
-    val weightRow0 = 2.0
+    //az ujjak hossza bekerült a fizikai layout effort modellbe, így egyelőre ezek az értékek 0 súlyt kapnak
+    val weightRow0 = 0.0
     val weightRow1 = 0
     val weightRow2 = 0.0
     val weightRow3 = 0.0 // Home row (ezt külön jutalmazzuk lent)
