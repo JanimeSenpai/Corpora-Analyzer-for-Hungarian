@@ -93,7 +93,7 @@ fun longerimprovementTest(runs:Int=15) {
 }
 
 // A runBlocking összeköti a hagyományos szinkron kódot a korutinok világával
-fun parallelimprovementTest(runs: Int = 25, keyboardname: String = "ltsnergomini") = runBlocking {
+fun parallelimprovementTest(runs: Int = 25, keyboardname: String = "ltsnergorowstagger") = runBlocking {
     val originalYamlFile = File("keyboards/${keyboardname}.yaml")
     val initialLayout = try {
         LayoutParser.parseLayout(originalYamlFile)
