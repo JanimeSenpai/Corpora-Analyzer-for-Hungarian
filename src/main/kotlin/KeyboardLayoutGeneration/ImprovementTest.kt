@@ -10,11 +10,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import layoutcharefforts
-import renderCharEffortlayout
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 fun main(){
-    parallelimprovementTest(25)
+    parallelimprovementTest(75)
 }
 
 fun improvementTest (){
@@ -87,22 +88,21 @@ fun longerimprovementTest(runs:Int=15) {
         completeLayoutAnalysis(layout, corpusData, verbose = true)
 
         layoutcharefforts(layout)
-        renderCharEffortlayout(layout)
+        renderCharEffortlayout(layout,)
     }
 }
 
-
 // A runBlocking összeköti a hagyományos szinkron kódot a korutinok világával
-fun parallelimprovementTest(runs:Int = 25, keyboardname:String="ltsnergomini") = runBlocking {
+fun parallelimprovementTest(runs: Int = 25, keyboardname: String = "ltsnergomini") = runBlocking {
+    val originalYamlFile = File("keyboards/${keyboardname}.yaml")
     val initialLayout = try {
-        LayoutParser.parseLayout(File("keyboards/${keyboardname}.yaml"))
+        LayoutParser.parseLayout(originalYamlFile)
     } catch (e: Exception) {
         println("Hiba a beolvasáskor: ${e.message}")
         return@runBlocking
     }
 
     val corpusData = CorpusData.loadFromDataset("huszonkettoHuszonnegyeswikipediahuszonegy.txt")
-
 
     println("=== SA OPTIMALIZÁLÁS INDÍTÁSA ($runs FUTÁS PÁRHUZAMOSAN) ===")
     val startTime = System.currentTimeMillis()
@@ -111,7 +111,7 @@ fun parallelimprovementTest(runs:Int = 25, keyboardname:String="ltsnergomini") =
     val deferredResults = (1..runs).map { i ->
         async(Dispatchers.Default) {
             // A deepCopy() miatt minden szál a saját layout példányával dolgozik
-            val bestLayoutInRun = improveLayout(initialLayout, corpusData)
+            val bestLayoutInRun = improveLayout(initialLayout, corpusData, iterations = 20000)
 
             // Csendes kiértékelés a végeredményhez (fájlba írás nélkül)
             val finalAnalysis = completeLayoutAnalysis(bestLayoutInRun, corpusData, verbose = false)
@@ -125,7 +125,6 @@ fun parallelimprovementTest(runs:Int = 25, keyboardname:String="ltsnergomini") =
 
     // Bevárjuk mind a 15 szálat, és egy listába gyűjtjük az eredményeiket
     val results = deferredResults.awaitAll().toMutableList()
-
     val totalTimeSeconds = (System.currentTimeMillis() - startTime) / 1000.0
     println("\nMind a $runs futás befejeződött. Teljes idő: ${String.format("%.1f", totalTimeSeconds)} mp")
 
@@ -139,22 +138,37 @@ fun parallelimprovementTest(runs:Int = 25, keyboardname:String="ltsnergomini") =
     println("=== A LEGJOBB 3 KIOSZTÁS KIÉRTÉKELÉSE ÉS MENTÉSE ===")
     println("==================================================")
 
+    // --- ÚJ: Mappa létrehozása a mentéshez ---
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+    val timestamp = LocalDateTime.now().format(formatter)
+    val safeLayoutName = initialLayout.name.replace(" ", "_")
+
+    val runDirName = "$safeLayoutName-$timestamp"
+    val outputDir = File("generatedkeyboards/$runDirName")
+    outputDir.mkdirs() // Létrehozza a mappát, ha nem létezik
+
+    println("Eredmények mentése ide: ${outputDir.absolutePath}")
+
     // A top 3 mentése már hagyományosan, egymás után történik, hogy a fájlba írás véletlenül se akadjon össze
     for ((index, pair) in top3.withIndex()) {
         val rank = index + 1
         val (effort, layout) = pair
 
-        // Dinamikusan átnevezzük, hogy a fájlok a megfelelő mappába kerüljenek
-        layout.name = "${initialLayout.name}_optimized_$rank"
+        layout.name = "${safeLayoutName}_optimized_$rank"
 
         println("\n>>> $rank. HELYEZETT (${layout.name}) - Total Effort: ${String.format("%.4f", effort)} <<<")
 
         printLayout(layout)
-
         // Verbose = true: itt készülnek el az analysis_results mappába a txt fájlok
         completeLayoutAnalysis(layout, corpusData, verbose = true)
-
         layoutcharefforts(layout)
-        renderCharEffortlayout(layout)
+
+        // 1. Kép mentése az új mappába
+        val imageOutputPath = File(outputDir, "${layout.name}_heatmap.png").absolutePath
+        renderCharEffortlayout(layout, imageOutputPath)
+
+        // 2. YAML fájl mentése az új mappába
+        val yamlOutputPath = File(outputDir, "${layout.name}.yaml")
+        saveLayoutToYaml(layout, originalYamlFile, yamlOutputPath)
     }
 }
