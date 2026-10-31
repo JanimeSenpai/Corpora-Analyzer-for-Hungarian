@@ -22,13 +22,13 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     // --- 1. BÜNTETŐ SÚLYOK (Minimalizálandó értékek -> növelik a Total Effortot) ---
     val weightCharReachEffort = 40.0
-    val weightHandImbalance = 0.5
+    val weightHandImbalance = 4.0
 
     // Cél: < 4-6%
     val weightPinkyOff = 5.0
 
     // Cél: < 1-1.5%
-    val weightSfb = 10.0  //original 10
+    val weightSfb = 15.0  //original 10
 
     // Cél: < 0.5% (ÚJ)
     val weightFullScissor = 15.0  //original 15
@@ -36,6 +36,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
 
     // Cél: < 1.5-2% (ÚJ)
     val weightLateralStretch = 8.0
+    val weightPinkyStretch = 8.0
 
     // Cél: < 2-3%
     val weightRedirect = 4.0
@@ -62,7 +63,25 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
     val weightThreeRoll = 1.6
 
     // Kéz-aszimmetria kiszámítása: |bal% - jobb%|
-    val handImbalance = kotlin.math.abs(result.handBalanceLeft - result.handBalanceRight)
+    //val handImbalance = kotlin.math.abs(result.handBalanceLeft - result.handBalanceRight)
+
+    val lessUsedHandPercentage = minOf(result.handBalanceLeft, result.handBalanceRight)
+    val k = 50.0 - lessUsedHandPercentage
+
+    val handImbalance = when {
+        k <= 5.0 -> {
+            0.04 * (5.0 - k) * (5.0 - k)
+        }
+        k <= 7.0 -> {
+            0.5 * (k - 5.0) * (k - 5.0)
+        }
+        else -> {
+            val diff = k - 7.0
+            // C1 folytonos harmadfokú folytatás: a k=7 pontban az érték (2.0)
+            // és a meredekség (2.0) is tökéletesen illeszkedik a fenti másodfokú ághoz.
+            diff * diff * diff + 2.0 * diff + 2.0
+        }
+    }
 
     // Sorok súlyozott összege (index-biztos lekéréssel, ha változna a sorok száma)
     val rowPenalty =
@@ -83,6 +102,7 @@ fun calculateTotalEffort(result: LayoutAnalysisResult): Double {
                 (result.fullScissorPercentage * weightFullScissor) +
                 (result.halfScissorPercentage * weightHalfScissor) +
                 (result.lateralStretchPercentage * weightLateralStretch) +
+                (result.pinkystretchPercentage * weightPinkyStretch) +
                 (result.redirectPercentage * weightRedirect) +
                 (result.spaceSfs1Penalty * weightSpaceSfs1) +
                 rowPenalty

@@ -19,6 +19,7 @@ data class LayoutAnalysisResult(
     val redirectPercentage: Double,
     val spaceSfs1Penalty: Double,
     val lateralStretchPercentage: Double,
+    val pinkystretchPercentage: Double,
     val fullScissorPercentage: Double,
     val baseGravityEffort: Double, //láthatóvá tesszük a ritka karakterek mozgását a billentyűzet szélén
     val halfScissorPercentage: Double
@@ -243,6 +244,13 @@ fun completeLayoutAnalysis(
         datasetName = corpusData.datasetName
     )
 
+    val pinkyStretchPercentage = pinkyStretchAnalysis(
+        charPositions = charToPos,
+        bigrams = corpusData.bigrams,
+        verbose = verbose,
+        layoutName = layoutData.name,
+        datasetName = corpusData.datasetName)
+
     val fullScissorPercentage = fullScissorAnalysis(
         charPositions = charToPos,
         bigrams = corpusData.bigrams,
@@ -278,6 +286,7 @@ val halfScissorPercentage = halfScissorAnalysis(
         redirectPercentage = redirectPercentage,
         spaceSfs1Penalty = spaceSfs1Penalty,
         lateralStretchPercentage = lateralStretchPercentage,
+        pinkystretchPercentage =pinkyStretchPercentage ,
         fullScissorPercentage = fullScissorPercentage,
         halfScissorPercentage = halfScissorPercentage,
         baseGravityEffort = baseGravityEffort
