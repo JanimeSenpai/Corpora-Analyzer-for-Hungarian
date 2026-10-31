@@ -271,4 +271,27 @@ fun bigramanalysis(filename: String) {
         }
     }
     println("Sikeresen végrehajtva: doubleletterbigrams.txt létrehozva.")
+
+    // 9. Kizárólag mássalhangzókból álló bigramok kigyűjtése (Consonant-Consonant)
+    val consonantBigramsOutputFile = File(resultDir, "consonantbigrams.txt")
+    consonantBigramsOutputFile.bufferedWriter().use { writer ->
+        writer.write("Kizárólag mássalhangzó-mássalhangzó (CC) bigramok gyakoriság szerint:")
+        writer.newLine()
+        writer.newLine()
+
+        // Kiszűrjük azokat a bigramokat, ahol mindkét betű a mássalhangzók halmazába tartozik
+        val consonantOnlyBigrams = sortedBigrams.filter {
+            it.bigram[0] in consonants && it.bigram[1] in consonants
+        }
+
+        // Kiírjuk a megszokott formátumban (Bigram \t Százalék \t Darab)
+        for (item in consonantOnlyBigrams) {
+            val percentage = (item.count.toDouble() / totalBigrams) * 100
+            val formattedPercentage = "%.4f".format(percentage)
+            writer.write("${item.bigram}\t$formattedPercentage%\t${item.count}")
+            writer.newLine()
+        }
+    }
+    println("Sikeresen végrehajtva: consonantbigrams.txt létrehozva.")
+
 }
